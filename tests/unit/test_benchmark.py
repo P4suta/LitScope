@@ -372,6 +372,123 @@ class TestParallelExecution:
         assert len(results) == 2
 
 
+class TestParallelErrorPaths:
+    def test_parallel_failed_analyzer(self, seeded_db: Database) -> None:
+        """Cover parallel path: analyzer raises exception."""
+
+        class GoodParallel(BaseAnalyzer):
+            name: ClassVar[str] = "good_par"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult(self.name, work_data.work_id, {"v": 1.0}, {})
+
+        class BadParallel(BaseAnalyzer):
+            name: ClassVar[str] = "bad_par"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                msg = "boom"
+                raise RuntimeError(msg)
+
+        orchestrator = PipelineOrchestrator(seeded_db, LitScopeSettings())
+        results = orchestrator.run("test-work", force=True, parallel=True)
+        # Only the good analyzer should have a result
+        assert len(results) == 1
+        assert results[0].analyzer_name == "good_par"
+
+    def test_parallel_dependency_failed_in_multi_layer(
+        self, seeded_db: Database
+    ) -> None:
+        """Cover _run_layer_parallel dependency-failed branch (orchestrator:160-166).
+
+        Need 2+ analyzers in same layer where one has a failed dependency,
+        so the layer is processed by _run_layer_parallel (not _run_one).
+        """
+
+        class FailRoot(BaseAnalyzer):
+            name: ClassVar[str] = "fail_root"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                msg = "root fails"
+                raise RuntimeError(msg)
+
+        class DepChildA(BaseAnalyzer):
+            name: ClassVar[str] = "dep_child_a"
+            dependencies: ClassVar[tuple[str, ...]] = ("fail_root",)
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult(self.name, work_data.work_id, {}, {})
+
+        class DepChildB(BaseAnalyzer):
+            name: ClassVar[str] = "dep_child_b"
+            dependencies: ClassVar[tuple[str, ...]] = ("fail_root",)
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult(self.name, work_data.work_id, {}, {})
+
+        orchestrator = PipelineOrchestrator(seeded_db, LitScopeSettings())
+        # Layer 1: fail_root (single → _run_one)
+        # Layer 2: dep_child_a + dep_child_b (2 items → _run_layer_parallel)
+        # Both should be skipped due to failed dependency
+        results = orchestrator.run("test-work", force=True, parallel=True)
+        names = {r.analyzer_name for r in results}
+        assert "dep_child_a" not in names
+        assert "dep_child_b" not in names
+
+
+class TestParallelNoneResult:
+    def test_parallel_none_result_skipped(self, seeded_db: Database) -> None:
+        """Cover orchestrator:206 — result is None guard in _run_layer_parallel."""
+
+        class NoneRetA(BaseAnalyzer):
+            name: ClassVar[str] = "none_ret_a"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult(self.name, work_data.work_id, {"v": 1.0}, {})
+
+        class NoneRetB(BaseAnalyzer):
+            name: ClassVar[str] = "none_ret_b"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return None  # type: ignore[return-value]
+
+        orchestrator = PipelineOrchestrator(seeded_db, LitScopeSettings())
+        results = orchestrator.run("test-work", force=True, parallel=True)
+        names = {r.analyzer_name for r in results}
+        assert "none_ret_a" in names
+        assert "none_ret_b" not in names
+
+
+class TestLoadResultNotFound:
+    def test_load_result_raises_when_not_found(self, seeded_db: Database) -> None:
+        """Cover base.py:58-59 — ValueError when no result exists."""
+
+        class LoadNotFound(BaseAnalyzer):
+            name: ClassVar[str] = "load_not_found"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult(self.name, work_data.work_id, {}, {})
+
+        analyzer = LoadNotFound(seeded_db, LitScopeSettings())
+        with pytest.raises(ValueError, match="No result for load_not_found"):
+            analyzer.load_result("test-work")
+
+
 # --- Benchmark ---
 
 
