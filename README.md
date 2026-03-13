@@ -1,6 +1,6 @@
 # LitScope
 
-[![CI](https://github.com/your-org/litscope/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/litscope/actions/workflows/ci.yml)
+[![CI](https://github.com/P4suta/LitScope/actions/workflows/ci.yml/badge.svg)](https://github.com/P4suta/LitScope/actions/workflows/ci.yml)
 
 **Literary text analysis platform for computational literary studies.**
 
@@ -40,7 +40,7 @@ LitScope 以 Standard Ebooks 的 EPUB 语料库为对象，集成了从经典文
 ### Installation / インストール / 安装
 
 ```bash
-git clone https://github.com/your-org/litscope.git
+git clone https://github.com/P4suta/LitScope.git
 cd litscope
 uv sync
 ```
