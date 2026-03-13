@@ -97,3 +97,90 @@ class WorkData:
     def sentences_text(self) -> list[str]:
         """Load sentence texts as a flat list."""
         return [s.text for s in self.sentences]
+
+    # --- SQL pushdown methods for high-performance analysis ---
+
+    @cached_property
+    def word_frequency_counts(self) -> list[tuple[str, int]]:
+        """Lemma frequencies via SQL, excluding PUNCT and stopwords."""
+        rows = self._db.conn.execute(
+            "SELECT LOWER(lemma), COUNT(*) AS cnt FROM tokens "
+            "WHERE work_id = ? AND pos != 'PUNCT' AND NOT is_stop "
+            "GROUP BY LOWER(lemma) ORDER BY cnt DESC",
+            [self.work_id],
+        ).fetchall()
+        return [(row[0], row[1]) for row in rows]
+
+    @cached_property
+    def content_token_total(self) -> int:
+        """Count of non-PUNCT tokens via SQL."""
+        row = self._db.conn.execute(
+            "SELECT COUNT(*) FROM tokens WHERE work_id = ? AND pos != 'PUNCT'",
+            [self.work_id],
+        ).fetchone()
+        return row[0] if row else 0
+
+    @cached_property
+    def content_type_count(self) -> int:
+        """Distinct non-PUNCT lemma count (including stopwords) via SQL."""
+        row = self._db.conn.execute(
+            "SELECT COUNT(DISTINCT LOWER(lemma)) FROM tokens "
+            "WHERE work_id = ? AND pos != 'PUNCT'",
+            [self.work_id],
+        ).fetchone()
+        return row[0] if row else 0
+
+    @cached_property
+    def pos_counts(self) -> list[tuple[str, int]]:
+        """POS tag frequencies via SQL GROUP BY."""
+        rows = self._db.conn.execute(
+            "SELECT pos, COUNT(*) AS cnt FROM tokens "
+            "WHERE work_id = ? GROUP BY pos ORDER BY cnt DESC",
+            [self.work_id],
+        ).fetchall()
+        return [(row[0], row[1]) for row in rows]
+
+    @cached_property
+    def pos_by_sentence(self) -> dict[str, list[str]]:
+        """Sentence-grouped POS tags (lightweight: no Token objects)."""
+        rows = self._db.conn.execute(
+            "SELECT sentence_id, pos FROM tokens "
+            "WHERE work_id = ? ORDER BY sentence_id, position",
+            [self.work_id],
+        ).fetchall()
+        result: dict[str, list[str]] = {}
+        for sentence_id, pos in rows:
+            result.setdefault(sentence_id, []).append(pos)
+        return result
+
+    @cached_property
+    def content_token_texts(self) -> list[str]:
+        """Non-PUNCT token texts for syllable counting."""
+        rows = self._db.conn.execute(
+            "SELECT token FROM tokens "
+            "WHERE work_id = ? AND pos != 'PUNCT' "
+            "ORDER BY sentence_id, position",
+            [self.work_id],
+        ).fetchall()
+        return [row[0] for row in rows]
+
+    @cached_property
+    def content_char_total(self) -> int:
+        """Total character count of non-PUNCT tokens via SQL."""
+        row = self._db.conn.execute(
+            "SELECT SUM(LENGTH(token)) FROM tokens "
+            "WHERE work_id = ? AND pos != 'PUNCT'",
+            [self.work_id],
+        ).fetchone()
+        return row[0] if row and row[0] else 0
+
+    @cached_property
+    def content_lemmas(self) -> list[str]:
+        """Non-PUNCT lemma list in order, for MTLD calculation."""
+        rows = self._db.conn.execute(
+            "SELECT LOWER(lemma) FROM tokens "
+            "WHERE work_id = ? AND pos != 'PUNCT' "
+            "ORDER BY sentence_id, position",
+            [self.work_id],
+        ).fetchall()
+        return [row[0] for row in rows]
