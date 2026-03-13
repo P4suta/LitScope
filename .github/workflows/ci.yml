@@ -58,7 +58,7 @@ jobs:
         run: bun run check
 
       - name: Generate route tree
-        run: bunx tsr generate
+        run: bunx @tanstack/router-cli generate
 
       - name: Type check
         run: bunx tsc --noEmit
