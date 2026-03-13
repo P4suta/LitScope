@@ -23,7 +23,9 @@ class VocabularyFrequencyAnalyzer(BaseAnalyzer):
         tokens = work_data.tokens
         content_tokens = [t for t in tokens if t.pos != "PUNCT"]
         total = len(content_tokens)
-        counts: Counter[str] = Counter(t.lemma.lower() for t in content_tokens)
+        all_types = len({t.lemma.lower() for t in content_tokens})
+        freq_tokens = [t for t in content_tokens if not t.is_stop]
+        counts: Counter[str] = Counter(t.lemma.lower() for t in freq_tokens)
         frequencies: dict[str, Any] = (
             {
                 lemma: {"count": count, "tf": count / total}
@@ -37,7 +39,7 @@ class VocabularyFrequencyAnalyzer(BaseAnalyzer):
             analyzer_name=self.name,
             work_id=work_data.work_id,
             metrics={
-                "total_types": float(len(counts)),
+                "total_types": float(all_types),
                 "total_tokens": float(total),
             },
             data={"frequencies": frequencies},

@@ -20,6 +20,7 @@ export default defineConfig({
         "src/**/*.test.{ts,tsx}",
         "src/test-setup.ts",
         "src/test-utils.tsx",
+        "src/**/index.ts",
       ],
       thresholds: {
         branches: 100,

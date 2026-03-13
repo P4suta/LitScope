@@ -27,9 +27,9 @@ class TestVocabularyFrequencyAnalyzer:
         analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
         result = analyzer.analyze(work_data, AnalysisContext())
         freqs = result.data["frequencies"]
-        # "the" appears 4 times (lemma "the"), total non-PUNCT tokens = 17
-        assert freqs["the"]["count"] == 4
-        assert freqs["the"]["tf"] == pytest.approx(4 / 17)
+        # "cat" appears 2 times, total non-PUNCT tokens = 17, stop words excluded
+        assert freqs["cat"]["count"] == 2
+        assert freqs["cat"]["tf"] == pytest.approx(2 / 17)
 
     def test_ranking(self, seeded_db: Database, work_data: WorkData) -> None:
         analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
@@ -51,6 +51,18 @@ class TestVocabularyFrequencyAnalyzer:
         result = analyzer.analyze(work_data, AnalysisContext())
         assert "." not in result.data["frequencies"]
 
+    def test_excludes_stopwords(self, seeded_db: Database, work_data: WorkData) -> None:
+        analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
+        result = analyzer.analyze(work_data, AnalysisContext())
+        freqs = result.data["frequencies"]
+        # Stop words (the, on, with) should be excluded from frequencies
+        assert "the" not in freqs
+        assert "on" not in freqs
+        assert "with" not in freqs
+        # But total_types/total_tokens include all content tokens
+        assert result.metrics["total_tokens"] == 17.0
+        assert result.metrics["total_types"] == 13.0
+
     def test_store_to_db(self, seeded_db: Database, work_data: WorkData) -> None:
         analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
         result = analyzer.analyze(work_data, AnalysisContext())
@@ -61,9 +73,10 @@ class TestVocabularyFrequencyAnalyzer:
             "ORDER BY count DESC",
             ["test-work"],
         ).fetchall()
-        assert len(rows) == 13
-        assert rows[0][0] == "the"
-        assert rows[0][1] == 4
+        # 10 unique non-stop lemmas
+        assert len(rows) == 10
+        assert rows[0][0] == "cat"
+        assert rows[0][1] == 2
 
     def test_empty_work(self, tmp_db: Database) -> None:
         conn = tmp_db.conn

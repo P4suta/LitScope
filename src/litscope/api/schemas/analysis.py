@@ -23,6 +23,7 @@ class VocabularyAnalysis(BaseModel):
     mtld: float | None
     zipf_alpha: float | None
     zipf_r_squared: float | None
+    zipf_intercept: float | None
     top_words: list[WordFrequencyItem]
 
 
@@ -84,3 +85,37 @@ class ComparisonItem(BaseModel):
     title: str
     author: str
     metrics: dict[str, float | None]
+
+
+class TopicKeyword(BaseModel):
+    """Single keyword in a topic."""
+
+    lemma: str
+    score: float
+
+
+class TopicSummary(BaseModel):
+    """Topic summary for a work."""
+
+    topic_id: int
+    label: str
+    work_id: str
+    keywords: list[TopicKeyword]
+
+
+class TimelinePoint(BaseModel):
+    """Single point on the vocabulary timeline."""
+
+    pub_year: int
+    work_id: str
+    title: str
+    ttr: float | None
+    mtld: float | None
+    hapax_ratio: float | None
+    unique_lemmas: int | None
+
+
+class VocabularyTimeline(BaseModel):
+    """Vocabulary metrics over publication years."""
+
+    points: list[TimelinePoint]

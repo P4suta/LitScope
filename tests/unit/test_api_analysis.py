@@ -21,6 +21,7 @@ class TestVocabularyEndpoint:
         assert body["mtld"] == pytest.approx(45.0)
         assert body["zipf_alpha"] == pytest.approx(1.5)
         assert body["zipf_r_squared"] == pytest.approx(0.95)
+        assert body["zipf_intercept"] == pytest.approx(2.0)
         assert len(body["top_words"]) == 3
         assert body["top_words"][0]["lemma"] == "the"
 

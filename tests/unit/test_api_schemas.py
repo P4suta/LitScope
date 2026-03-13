@@ -128,6 +128,7 @@ class TestAnalysisSchemas:
             mtld=None,
             zipf_alpha=None,
             zipf_r_squared=None,
+            zipf_intercept=None,
             top_words=[],
         )
         assert v.ttr == 0.5
