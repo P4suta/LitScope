@@ -18,20 +18,6 @@ class TestAuthorsEndpoint:
         assert resp.json()["items"] == []
 
 
-class TestTopicsStub:
-    def test_topics_not_implemented(self, api_client: TestClient) -> None:
-        resp = api_client.get("/api/v1/topics")
-        assert resp.status_code == 404
-        assert "not yet implemented" in resp.json()["detail"]
-
-
-class TestTimelineStub:
-    def test_timeline_not_implemented(self, api_client: TestClient) -> None:
-        resp = api_client.get("/api/v1/timeline/vocabulary")
-        assert resp.status_code == 404
-        assert "not yet implemented" in resp.json()["detail"]
-
-
 class TestGenresStub:
     def test_genres_not_implemented(self, api_client: TestClient) -> None:
         resp = api_client.get("/api/v1/genres/comparison")

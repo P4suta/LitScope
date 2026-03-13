@@ -170,6 +170,7 @@ def get_vocabulary(
         mtld=richness.get("mtld") if richness else None,
         zipf_alpha=zipf.get("alpha") if zipf else None,
         zipf_r_squared=zipf.get("r_squared") if zipf else None,
+        zipf_intercept=zipf.get("intercept") if zipf else None,
         top_words=[WordFrequencyItem(lemma=w[0], count=w[1], tf=w[2]) for w in words],
     )
 
