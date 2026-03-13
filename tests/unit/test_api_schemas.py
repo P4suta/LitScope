@@ -210,8 +210,8 @@ class TestAnalysisSchemas:
 
 class TestIngestSchemas:
     def test_ingest_request(self) -> None:
-        r = IngestRequest(epub_dir="/path/to/epubs")
-        assert r.epub_dir == "/path/to/epubs"
+        r = IngestRequest(epub_dir="path/to/epubs")
+        assert r.epub_dir == "path/to/epubs"
 
     def test_ingest_result_item(self) -> None:
         r = IngestResultItem(

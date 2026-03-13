@@ -152,6 +152,20 @@ class TestPathTraversalRejection:
             resp = client.post("/api/v1/ingest", json={"epub_dir": "/etc/passwd"})
             assert resp.status_code == 422
 
+    def test_symlink_escape_rejected(self, tmp_db: Database, tmp_path: Path) -> None:
+        """Symlink that resolves outside base dir triggers router-level 403."""
+        base = tmp_path / "base"
+        base.mkdir()
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        (base / "escape").symlink_to(outside)
+
+        app = create_app(db=tmp_db, settings=_settings_with_epub_dir(base))
+        with TestClient(app) as client:
+            resp = client.post("/api/v1/ingest", json={"epub_dir": "escape"})
+            assert resp.status_code == 403
+            assert "traversal" in resp.json()["detail"].lower()
+
     @patch("litscope.ingestion.pipeline.IngestionPipeline")
     def test_valid_subdir_accepted(
         self, mock_pipeline_cls: MagicMock, tmp_db: Database, tmp_path: Path
