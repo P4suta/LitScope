@@ -26,6 +26,15 @@ build/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/src/routeTree.gen.ts
+frontend/src/api/schema.d.ts
+*.tsbuildinfo
+*.d.ts.map
+
+# Data
+data/
 
 # DuckDB
 *.duckdb
