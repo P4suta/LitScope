@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from litscope.analysis.base import BaseAnalyzer
@@ -20,16 +19,12 @@ class VocabularyFrequencyAnalyzer(BaseAnalyzer):
 
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Count lemma frequencies from tokens, excluding punctuation."""
-        tokens = work_data.tokens
-        content_tokens = [t for t in tokens if t.pos != "PUNCT"]
-        total = len(content_tokens)
-        all_types = len({t.lemma.lower() for t in content_tokens})
-        freq_tokens = [t for t in content_tokens if not t.is_stop]
-        counts: Counter[str] = Counter(t.lemma.lower() for t in freq_tokens)
+        total = work_data.content_token_total
+        all_types = work_data.content_type_count
         frequencies: dict[str, Any] = (
             {
                 lemma: {"count": count, "tf": count / total}
-                for lemma, count in counts.most_common()
+                for lemma, count in work_data.word_frequency_counts
             }
             if total > 0
             else {}

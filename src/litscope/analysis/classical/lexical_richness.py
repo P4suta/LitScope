@@ -48,7 +48,7 @@ class LexicalRichnessAnalyzer(BaseAnalyzer):
         yules_k = 10000 * (m2 - m1) / (m1 * m1) if m1 > 0 else 0.0
 
         # MTLD
-        content_lemmas = [t.lemma.lower() for t in work_data.tokens if t.pos != "PUNCT"]
+        content_lemmas = work_data.content_lemmas
         mtld = self._compute_mtld(content_lemmas)
 
         return AnalysisResult(
