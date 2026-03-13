@@ -20,11 +20,7 @@ class SentenceOpeningsAnalyzer(BaseAnalyzer):
 
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Extract first 1-3 POS tags (skipping PUNCT) per sentence."""
-        tokens = work_data.tokens
-        # Group tokens by sentence
-        sentence_tokens: dict[str, list[str]] = {}
-        for t in tokens:
-            sentence_tokens.setdefault(t.sentence_id, []).append(t.pos)
+        sentence_tokens = work_data.pos_by_sentence
 
         patterns: Counter[str] = Counter()
         total = 0

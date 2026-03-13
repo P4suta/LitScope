@@ -37,6 +37,33 @@ class BaseAnalyzer(ABC):
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Run analysis on a work and return results."""
 
+    def is_analyzed(self, work_id: str) -> bool:
+        """Check if results already exist for this analyzer + work_id."""
+        row = self._db.conn.execute(
+            "SELECT 1 FROM analysis_results WHERE analyzer_name = ? AND work_id = ?",
+            [self.name, work_id],
+        ).fetchone()
+        return row is not None
+
+    def load_result(self, work_id: str) -> AnalysisResult:
+        """Load existing analysis result from the database."""
+        from litscope.analysis.models import AnalysisResult
+
+        row = self._db.conn.execute(
+            "SELECT metrics, data FROM analysis_results "
+            "WHERE analyzer_name = ? AND work_id = ?",
+            [self.name, work_id],
+        ).fetchone()
+        if row is None:
+            msg = f"No result for {self.name} on {work_id}"
+            raise ValueError(msg)
+        return AnalysisResult(
+            analyzer_name=self.name,
+            work_id=work_id,
+            metrics=json.loads(row[0]),
+            data=json.loads(row[1]),
+        )
+
     def store_result(self, result: AnalysisResult) -> None:
         """Store analysis result in the analysis_results table."""
         self._db.conn.execute(

@@ -21,11 +21,9 @@ class ReadabilityAnalyzer(BaseAnalyzer):
 
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Compute readability indices from sentences and tokens."""
-        sentences = work_data.sentences
-        tokens = [t for t in work_data.tokens if t.pos != "PUNCT"]
-
-        total_sentences = len(sentences)
-        total_words = len(tokens)
+        total_sentences = len(work_data.sentences)
+        token_texts = work_data.content_token_texts
+        total_words = len(token_texts)
 
         if total_sentences == 0 or total_words == 0:
             return AnalysisResult(
@@ -35,8 +33,8 @@ class ReadabilityAnalyzer(BaseAnalyzer):
                 {},
             )
 
-        total_syllables = sum(max(syllables.estimate(t.token), 1) for t in tokens)
-        total_chars = sum(len(t.token) for t in tokens)
+        total_syllables = sum(max(syllables.estimate(t), 1) for t in token_texts)
+        total_chars = work_data.content_char_total
 
         # Flesch-Kincaid Grade Level
         fk = (

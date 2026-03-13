@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from typing import TYPE_CHECKING, ClassVar
 
 from litscope.analysis.base import BaseAnalyzer
@@ -20,19 +19,18 @@ class PosDistributionAnalyzer(BaseAnalyzer):
 
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Count POS tags from all tokens."""
-        tokens = work_data.tokens
-        total = len(tokens)
-        counts: Counter[str] = Counter(t.pos for t in tokens)
+        pos_counts = work_data.pos_counts
+        total = sum(count for _, count in pos_counts)
 
         distribution = {
             pos: {"count": count, "ratio": count / total if total > 0 else 0.0}
-            for pos, count in counts.most_common()
+            for pos, count in pos_counts
         }
 
         return AnalysisResult(
             self.name,
             work_data.work_id,
-            {"total_tokens": float(total), "unique_pos": float(len(counts))},
+            {"total_tokens": float(total), "unique_pos": float(len(pos_counts))},
             {"distribution": distribution},
         )
 

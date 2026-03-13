@@ -80,3 +80,57 @@ class TestWorkData:
         wd = WorkData(work_id="nonexistent", _db=tmp_db)
         with pytest.raises(ValueError, match="Work not found"):
             _ = wd.work
+
+    # --- SQL pushdown methods ---
+
+    def test_word_frequency_counts(self, work_data: WorkData) -> None:
+        counts = work_data.word_frequency_counts
+        lemma_dict = dict(counts)
+        # cat appears twice (non-stop), should be in results
+        assert lemma_dict["cat"] == 2
+        # "the" is a stopword — should NOT appear
+        assert "the" not in lemma_dict
+        # "sit" appears once
+        assert lemma_dict["sit"] == 1
+
+    def test_content_token_total(self, work_data: WorkData) -> None:
+        # 20 total tokens - 3 PUNCT = 17
+        assert work_data.content_token_total == 17
+
+    def test_content_type_count(self, work_data: WorkData) -> None:
+        # Non-PUNCT unique lemmas (including stopwords): 13
+        assert work_data.content_type_count == 13
+
+    def test_pos_counts(self, work_data: WorkData) -> None:
+        counts = dict(work_data.pos_counts)
+        assert counts["NOUN"] == 6
+        assert counts["DET"] == 4
+        assert counts["PUNCT"] == 3
+
+    def test_pos_by_sentence(self, work_data: WorkData) -> None:
+        by_sent = work_data.pos_by_sentence
+        assert len(by_sent) == 3
+        # First sentence: DET NOUN VERB ADP DET NOUN PUNCT
+        first_key = "test-work::ch000::s000"
+        expected = ["DET", "NOUN", "VERB", "ADP", "DET", "NOUN", "PUNCT"]
+        assert by_sent[first_key] == expected
+
+    def test_content_token_texts(self, work_data: WorkData) -> None:
+        texts = work_data.content_token_texts
+        # 17 non-PUNCT tokens
+        assert len(texts) == 17
+        assert "." not in texts
+        assert "The" in texts
+
+    def test_content_char_total(self, work_data: WorkData) -> None:
+        # Sum of len(token) for all non-PUNCT tokens
+        expected = sum(len(t) for t in work_data.content_token_texts)
+        assert work_data.content_char_total == expected
+
+    def test_content_lemmas(self, work_data: WorkData) -> None:
+        lemmas = work_data.content_lemmas
+        assert len(lemmas) == 17
+        # All lowercased
+        assert all(lemma == lemma.lower() for lemma in lemmas)
+        # Punctuation excluded
+        assert "." not in lemmas

@@ -20,11 +20,7 @@ class PosTransitionAnalyzer(BaseAnalyzer):
 
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Compute POS bigram transitions grouped by sentence."""
-        tokens = work_data.tokens
-        # Group tokens by sentence
-        sentence_tokens: dict[str, list[str]] = {}
-        for t in tokens:
-            sentence_tokens.setdefault(t.sentence_id, []).append(t.pos)
+        sentence_tokens = work_data.pos_by_sentence
 
         bigram_counts: Counter[tuple[str, str]] = Counter()
         for pos_list in sentence_tokens.values():

@@ -264,6 +264,128 @@ class TestServeCommand:
         assert call_kwargs[1]["port"] == 9000
 
 
+class TestBenchmarkCommand:
+    def test_benchmark_table_format(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "benchmark",
+                "--analyzers",
+                "vocabulary_frequency",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "LitScope Pipeline Benchmark" in result.output
+
+    def test_benchmark_csv_format(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "benchmark",
+                "--analyzers",
+                "vocabulary_frequency",
+                "--format",
+                "csv",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "analyzer_name" in result.output
+
+    def test_benchmark_json_format(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "benchmark",
+                "--analyzers",
+                "vocabulary_frequency",
+                "--format",
+                "json",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+        import json
+
+        data = json.loads(result.output)
+        assert "work_count" in data
+
+    def test_benchmark_specific_work(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "benchmark",
+                "--work",
+                "sample",
+                "--analyzers",
+                "vocabulary_frequency",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_benchmark_no_works(self, tmp_path: Path) -> None:
+        db_path = tmp_path / "test.duckdb"
+        from litscope.storage.database import Database
+
+        with Database(db_path) as db:
+            db.migrate()
+
+        result = CliRunner().invoke(cli, ["benchmark", "--db-path", str(db_path)])
+        assert result.exit_code == 0
+        assert "No works found" in result.output
+
+    def test_benchmark_with_cprofile(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "benchmark",
+                "--analyzers",
+                "vocabulary_frequency",
+                "--cprofile",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "cProfile data saved" in result.output
+
+
 class TestCliGroup:
     def test_version(self) -> None:
         result = CliRunner().invoke(cli, ["--version"])
