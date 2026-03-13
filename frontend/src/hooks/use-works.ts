@@ -19,9 +19,12 @@ export function useWork(workId: string) {
   return useQuery({
     queryKey: ["works", workId],
     queryFn: async () => {
-      const { data, error } = await api.GET("/works/{work_id}" as never, {
-        params: { path: { work_id: workId } },
-      });
+      const { data, error } = await api.GET(
+        "/works/{work_id}" as never,
+        {
+          params: { path: { work_id: workId } },
+        } as never,
+      );
       if (error) throw new Error(`Failed to fetch work ${workId}`);
       return data;
     },

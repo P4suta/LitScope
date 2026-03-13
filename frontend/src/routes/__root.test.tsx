@@ -7,9 +7,7 @@ vi.mock("@tanstack/react-query", () => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  createRootRouteWithContext:
-    () =>
-    (opts: { component: React.ComponentType }) => opts,
+  createRootRouteWithContext: () => (opts: { component: React.ComponentType }) => opts,
   Outlet: () => <div data-testid="outlet" />,
 }));
 
