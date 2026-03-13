@@ -81,6 +81,18 @@ class TestLexicalRichnessAnalyzer:
         analyzer = LexicalRichnessAnalyzer(seeded_db, LitScopeSettings())
         assert analyzer._mtld_one_direction([]) == 0.0
 
+    def test_mtld_ends_at_threshold(self, seeded_db: Database) -> None:
+        """MTLD where the last token triggers factor reset (token_count=0 at end).
+
+        Covers the False branch of `if token_count > 0:` in _mtld_one_direction.
+        """
+        analyzer = LexicalRichnessAnalyzer(seeded_db, LitScopeSettings())
+        # 2 types in 3 tokens → TTR = 2/3 ≈ 0.667 ≤ 0.72 → factor resets
+        # Loop ends with token_count == 0 (no partial factor)
+        tokens = ["a", "b", "a"]
+        result = analyzer._mtld_one_direction(tokens)
+        assert result == pytest.approx(3.0)
+
     def test_stores_in_analysis_results(
         self, seeded_db: Database, work_data: WorkData
     ) -> None:

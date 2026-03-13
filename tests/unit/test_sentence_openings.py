@@ -110,3 +110,10 @@ class TestSentenceOpeningsAnalyzer:
         analyzer = SentenceOpeningsAnalyzer(tmp_db, settings)
         result = analyzer.analyze(wd, ctx)
         assert result.metrics["total_sentences"] == 0.0
+        analyzer.store_result(result)
+        rows = tmp_db.conn.execute(
+            "SELECT COUNT(*) FROM sentence_opening_patterns WHERE work_id = ?",
+            ["empty-work"],
+        ).fetchone()
+        assert rows is not None
+        assert rows[0] == 0

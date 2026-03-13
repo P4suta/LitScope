@@ -78,3 +78,11 @@ class TestVocabularyFrequencyAnalyzer:
         assert result.metrics["total_tokens"] == 0.0
         assert result.metrics["total_types"] == 0.0
         assert result.data["frequencies"] == {}
+        # store_result with empty frequencies covers the `if frequencies:` False branch
+        analyzer.store_result(result)
+        rows = tmp_db.conn.execute(
+            "SELECT COUNT(*) FROM word_frequencies WHERE work_id = ?",
+            ["empty-work"],
+        ).fetchone()
+        assert rows is not None
+        assert rows[0] == 0

@@ -6,6 +6,7 @@ import pytest
 from ebooklib import epub
 
 from litscope.ingestion.pipeline import IngestionPipeline, IngestionSummary
+from litscope.ingestion.text_normalizer import TextNormalizer
 from litscope.storage.database import Database
 from tests.conftest import create_sample_epub
 
@@ -145,6 +146,41 @@ class TestIngestionSummary:
         assert summary.ingested == 0
         assert summary.skipped == 0
         assert summary.failed == 0
+
+
+class TestEmptyTokenSentence:
+    def test_sentence_with_no_tokens(self, db: Database, tmp_path: Path) -> None:
+        """Sentences with empty tokens list should be stored without token inserts."""
+        from unittest.mock import patch
+
+        from litscope.ingestion.text_normalizer import (
+            NormalizedChapter,
+            NormalizedSentence,
+        )
+
+        create_sample_epub(tmp_path)
+        # Return a chapter with one sentence that has no tokens
+        empty_chapter = NormalizedChapter(
+            sentences=[NormalizedSentence(text="...", tokens=[])]
+        )
+
+        with patch.object(
+            TextNormalizer, "normalize", return_value=empty_chapter
+        ):
+            pipeline = IngestionPipeline(db=db)
+            summary = pipeline.ingest_directory(tmp_path)
+
+        assert summary.ingested == 1
+        result = next(r for r in summary.results if r.success and not r.skipped)
+        assert result.tokens == 0
+        # Sentences should still be inserted
+        row = db.conn.execute("SELECT COUNT(*) FROM sentences").fetchone()
+        assert row is not None
+        assert row[0] > 0
+        # But no tokens
+        row = db.conn.execute("SELECT COUNT(*) FROM tokens").fetchone()
+        assert row is not None
+        assert row[0] == 0
 
 
 class TestEmptyDirectory:

@@ -81,6 +81,18 @@ class TestTextNormalizer:
         assert len(stop_tokens) > 0
 
 
+class TestTextNormalizerInit:
+    def test_custom_nlp_injection(self) -> None:
+        """Passing a custom nlp skips the default spaCy load."""
+        import spacy
+
+        custom_nlp = spacy.load("en_core_web_sm", exclude=["ner", "parser"])
+        custom_nlp.enable_pipe("senter")
+        norm = TextNormalizer(nlp=custom_nlp)
+        result = norm.normalize("<p>Hello world.</p>")
+        assert result.sent_count >= 1
+
+
 class TestNormalizedDataclasses:
     def test_normalized_token(self) -> None:
         t = NormalizedToken(text="cat", lemma="cat", pos="NOUN", is_stop=False)

@@ -83,3 +83,10 @@ class TestPosTransitionAnalyzer:
         analyzer = PosTransitionAnalyzer(tmp_db, settings)
         result = analyzer.analyze(wd, ctx)
         assert result.metrics["total_transitions"] == 0.0
+        analyzer.store_result(result)
+        rows = tmp_db.conn.execute(
+            "SELECT COUNT(*) FROM pos_transitions WHERE work_id = ?",
+            ["empty-work"],
+        ).fetchone()
+        assert rows is not None
+        assert rows[0] == 0

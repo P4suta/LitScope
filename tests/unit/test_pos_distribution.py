@@ -68,3 +68,10 @@ class TestPosDistributionAnalyzer:
         result = analyzer.analyze(wd, AnalysisContext())
         assert result.metrics["total_tokens"] == 0.0
         assert result.data["distribution"] == {}
+        analyzer.store_result(result)
+        rows = tmp_db.conn.execute(
+            "SELECT COUNT(*) FROM pos_distributions WHERE work_id = ?",
+            ["empty-work"],
+        ).fetchone()
+        assert rows is not None
+        assert rows[0] == 0

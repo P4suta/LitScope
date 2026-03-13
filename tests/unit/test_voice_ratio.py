@@ -88,6 +88,14 @@ class TestVoiceRatioAnalyzer:
         result = analyzer.analyze(wd, ctx)
         assert result.metrics["passive_ratio"] == 0.0
 
+    def test_nlp_cache_reuse(self, seeded_db: Database) -> None:
+        """Calling _get_nlp twice should return the same cached instance."""
+        settings = LitScopeSettings()
+        analyzer = VoiceRatioAnalyzer(seeded_db, settings)
+        nlp1 = analyzer._get_nlp()
+        nlp2 = analyzer._get_nlp()
+        assert nlp1 is nlp2
+
     def test_metrics_keys(self, seeded_db: Database, work_data: WorkData) -> None:
         analyzer, ctx = self._run_with_context(seeded_db, work_data)
         result = analyzer.analyze(work_data, ctx)

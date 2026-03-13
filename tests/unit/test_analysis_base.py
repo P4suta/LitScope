@@ -1,6 +1,7 @@
 """Tests for BaseAnalyzer abstract class."""
 
 import json
+from abc import abstractmethod
 from typing import ClassVar
 
 import pytest
@@ -79,6 +80,34 @@ class TestBaseAnalyzer:
         ).fetchone()
         assert row is not None
         assert json.loads(row[0]) == {"v": 2.0}
+
+    def test_abstract_subclass_not_registered(self) -> None:
+        """Abstract intermediate subclass should not be registered."""
+        from litscope.analysis.registry import AnalyzerRegistry
+
+        before = set(AnalyzerRegistry.all_names())
+
+        class AbstractMiddle(BaseAnalyzer):
+            """An abstract subclass with no concrete analyze()."""
+
+            @abstractmethod
+            def extra(self) -> None: ...
+
+        assert set(AnalyzerRegistry.all_names()) == before
+
+    def test_subclass_without_name_not_registered(self) -> None:
+        """Concrete subclass without `name` attribute should not be registered."""
+        from litscope.analysis.registry import AnalyzerRegistry
+
+        before = set(AnalyzerRegistry.all_names())
+
+        class NoNameAnalyzer(BaseAnalyzer):
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult("x", work_data.work_id, {}, {})
+
+        assert set(AnalyzerRegistry.all_names()) == before
 
     def test_dependencies_default_empty(self) -> None:
         assert BaseAnalyzer.dependencies == ()

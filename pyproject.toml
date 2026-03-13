@@ -79,6 +79,7 @@ addopts = "-v --tb=short"
 
 [tool.coverage.run]
 source = ["litscope"]
+branch = true
 
 [tool.coverage.report]
 fail_under = 100
