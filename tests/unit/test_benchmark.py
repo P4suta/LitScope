@@ -400,6 +400,115 @@ class TestPipelineBenchmark:
         assert result.work_summaries[0].work_id == "test-work"
         assert result.work_summaries[0].token_count == 20
 
+    def test_run_multiple_works_aggregates_analyzer(self, seeded_db: Database) -> None:
+        """Cover the branch where an analyzer name is already in by_analyzer."""
+        # Insert a second work so we can benchmark across two works
+        seeded_db.conn.execute(
+            "INSERT INTO works (work_id, title, author, file_path, file_hash, "
+            "pub_year, language, word_count, sent_count, chap_count) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                "test-work-2",
+                "Second Title",
+                "Test Author",
+                "/path/to/test2.epub",
+                "def456hash",
+                1925,
+                "en",
+                10,
+                1,
+                1,
+            ],
+        )
+        seeded_db.conn.execute(
+            "INSERT INTO chapters (chapter_id, work_id, position, title, "
+            "word_count, sent_count) VALUES (?, ?, ?, ?, ?, ?)",
+            ["test-work-2::ch000", "test-work-2", 0, "Chapter 1", 10, 1],
+        )
+        seeded_db.conn.execute(
+            "INSERT INTO sentences (sentence_id, work_id, chapter_id, position, "
+            "text, word_count, char_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                "test-work-2::ch000::s000",
+                "test-work-2",
+                "test-work-2::ch000",
+                0,
+                "A simple test sentence here.",
+                5,
+                28,
+            ],
+        )
+        seeded_db.conn.executemany(
+            "INSERT INTO tokens (work_id, sentence_id, position, "
+            "token, lemma, pos, is_stop) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                ("test-work-2", "test-work-2::ch000::s000", 0, "A", "a", "DET", True),
+                (
+                    "test-work-2",
+                    "test-work-2::ch000::s000",
+                    1,
+                    "simple",
+                    "simple",
+                    "ADJ",
+                    False,
+                ),
+                (
+                    "test-work-2",
+                    "test-work-2::ch000::s000",
+                    2,
+                    "test",
+                    "test",
+                    "NOUN",
+                    False,
+                ),
+                (
+                    "test-work-2",
+                    "test-work-2::ch000::s000",
+                    3,
+                    "sentence",
+                    "sentence",
+                    "NOUN",
+                    False,
+                ),
+                (
+                    "test-work-2",
+                    "test-work-2::ch000::s000",
+                    4,
+                    "here",
+                    "here",
+                    "ADV",
+                    False,
+                ),
+                (
+                    "test-work-2",
+                    "test-work-2::ch000::s000",
+                    5,
+                    ".",
+                    ".",
+                    "PUNCT",
+                    False,
+                ),
+            ],
+        )
+
+        class MultiWorkAnalyzer(BaseAnalyzer):
+            name: ClassVar[str] = "multi_work"
+
+            def analyze(
+                self, work_data: WorkData, context: AnalysisContext
+            ) -> AnalysisResult:
+                return AnalysisResult(self.name, work_data.work_id, {"v": 1.0}, {})
+
+        orchestrator = PipelineOrchestrator(seeded_db, LitScopeSettings())
+        bm = PipelineBenchmark(orchestrator)
+        result = bm.run(["test-work", "test-work-2"])
+
+        assert result.work_count == 2
+        assert result.analyzer_count == 1
+        assert len(result.analyzer_summaries) == 1
+        assert result.analyzer_summaries[0].analyzer_name == "multi_work"
+        assert len(result.work_summaries) == 2
+
 
 class TestFormatters:
     @pytest.fixture
