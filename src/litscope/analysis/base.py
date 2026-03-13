@@ -40,8 +40,7 @@ class BaseAnalyzer(ABC):
     def store_result(self, result: AnalysisResult) -> None:
         """Store analysis result in the analysis_results table."""
         self._db.conn.execute(
-            "DELETE FROM analysis_results "
-            "WHERE analyzer_name = ? AND work_id = ?",
+            "DELETE FROM analysis_results WHERE analyzer_name = ? AND work_id = ?",
             [result.analyzer_name, result.work_id],
         )
         self._db.conn.execute(

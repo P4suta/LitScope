@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from litscope.exceptions import AnalyzerNotFoundError, CircularDependencyError
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class AnalyzerRegistry:
     """Central registry for all analyzer classes."""
 
-    _analyzers: dict[str, type[BaseAnalyzer]] = {}
+    _analyzers: ClassVar[dict[str, type[BaseAnalyzer]]] = {}
 
     @classmethod
     def register(cls, analyzer_cls: type[BaseAnalyzer]) -> None:
@@ -82,7 +82,7 @@ class AnalyzerRegistry:
 
         import litscope.analysis as pkg
 
-        for _importer, modname, ispkg in pkgutil.walk_packages(
+        for _importer, modname, _ispkg in pkgutil.walk_packages(
             pkg.__path__, prefix=pkg.__name__ + "."
         ):
             if modname != "litscope.analysis.registry":

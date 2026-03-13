@@ -49,7 +49,9 @@ class TestPosTransitionAnalyzer:
         total = sum(t["ratio"] for t in transitions.values())
         assert total == pytest.approx(1.0)
 
-    def test_within_sentence_only(self, seeded_db: Database, work_data: WorkData) -> None:
+    def test_within_sentence_only(
+        self, seeded_db: Database, work_data: WorkData
+    ) -> None:
         """Transitions should not cross sentence boundaries."""
         analyzer, ctx = self._run_with_context(seeded_db, work_data)
         result = analyzer.analyze(work_data, ctx)

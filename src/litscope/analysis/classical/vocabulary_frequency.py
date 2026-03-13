@@ -24,10 +24,14 @@ class VocabularyFrequencyAnalyzer(BaseAnalyzer):
         content_tokens = [t for t in tokens if t.pos != "PUNCT"]
         total = len(content_tokens)
         counts: Counter[str] = Counter(t.lemma.lower() for t in content_tokens)
-        frequencies: dict[str, Any] = {
-            lemma: {"count": count, "tf": count / total}
-            for lemma, count in counts.most_common()
-        } if total > 0 else {}
+        frequencies: dict[str, Any] = (
+            {
+                lemma: {"count": count, "tf": count / total}
+                for lemma, count in counts.most_common()
+            }
+            if total > 0
+            else {}
+        )
 
         return AnalysisResult(
             analyzer_name=self.name,
@@ -40,12 +44,10 @@ class VocabularyFrequencyAnalyzer(BaseAnalyzer):
         )
 
     def store_result(self, result: AnalysisResult) -> None:
-        """Store frequencies in word_frequencies table and summary in analysis_results."""
+        """Store frequencies in word_frequencies and analysis_results."""
         super().store_result(result)
         conn = self._db.conn
-        conn.execute(
-            "DELETE FROM word_frequencies WHERE work_id = ?", [result.work_id]
-        )
+        conn.execute("DELETE FROM word_frequencies WHERE work_id = ?", [result.work_id])
         frequencies: dict[str, Any] = result.data.get("frequencies", {})
         if frequencies:
             conn.executemany(

@@ -24,9 +24,7 @@ class PipelineOrchestrator:
         self._db = db
         self._settings = settings
 
-    def run(
-        self, work_id: str, names: list[str] | None = None
-    ) -> list[AnalysisResult]:
+    def run(self, work_id: str, names: list[str] | None = None) -> list[AnalysisResult]:
         """Run analyzers for a single work in dependency order."""
         order = AnalyzerRegistry.resolve_order(names)
         work_data = WorkData(work_id=work_id, _db=self._db)
@@ -52,7 +50,9 @@ class PipelineOrchestrator:
                 analyzer.store_result(result)
                 context.set(analyzer_name, result)
                 results.append(result)
-                logger.info("analyzer_completed", analyzer=analyzer_name, work_id=work_id)
+                logger.info(
+                    "analyzer_completed", analyzer=analyzer_name, work_id=work_id
+                )
             except Exception:
                 logger.exception(
                     "analyzer_failed", analyzer=analyzer_name, work_id=work_id

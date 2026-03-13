@@ -35,9 +35,7 @@ class ReadabilityAnalyzer(BaseAnalyzer):
                 {},
             )
 
-        total_syllables = sum(
-            max(syllables.estimate(t.token), 1) for t in tokens
-        )
+        total_syllables = sum(max(syllables.estimate(t.token), 1) for t in tokens)
         total_chars = sum(len(t.token) for t in tokens)
 
         # Flesch-Kincaid Grade Level
@@ -48,9 +46,9 @@ class ReadabilityAnalyzer(BaseAnalyzer):
         )
 
         # Coleman-Liau Index
-        l = (total_chars / total_words) * 100  # avg chars per 100 words
-        s = (total_sentences / total_words) * 100  # avg sentences per 100 words
-        cli = 0.0588 * l - 0.296 * s - 15.8
+        chars_per_100 = (total_chars / total_words) * 100
+        sents_per_100 = (total_sentences / total_words) * 100
+        cli = 0.0588 * chars_per_100 - 0.296 * sents_per_100 - 15.8
 
         # Automated Readability Index
         ari = (

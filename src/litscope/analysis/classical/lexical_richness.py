@@ -45,14 +45,10 @@ class LexicalRichnessAnalyzer(BaseAnalyzer):
             freq_spectrum[c] = freq_spectrum.get(c, 0) + 1
         m1 = total_tokens
         m2 = sum(i * i * vi for i, vi in freq_spectrum.items())
-        yules_k = (
-            10000 * (m2 - m1) / (m1 * m1) if m1 > 0 else 0.0
-        )
+        yules_k = 10000 * (m2 - m1) / (m1 * m1) if m1 > 0 else 0.0
 
         # MTLD
-        content_lemmas = [
-            t.lemma.lower() for t in work_data.tokens if t.pos != "PUNCT"
-        ]
+        content_lemmas = [t.lemma.lower() for t in work_data.tokens if t.pos != "PUNCT"]
         mtld = self._compute_mtld(content_lemmas)
 
         return AnalysisResult(

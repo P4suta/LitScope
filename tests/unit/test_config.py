@@ -14,7 +14,10 @@ class TestLitScopeSettings:
         assert settings.epub_dir == Path("data/epubs")
         assert settings.log_level == "INFO"
         assert settings.spacy_model == "en_core_web_sm"
-        assert settings.sentiment_model == "nlptown/bert-base-multilingual-uncased-sentiment"
+        assert (
+            settings.sentiment_model
+            == "nlptown/bert-base-multilingual-uncased-sentiment"
+        )
         assert settings.embedding_model == "all-MiniLM-L6-v2"
         assert settings.sentiment_segments == 100
         assert settings.dialogue_segments == 100

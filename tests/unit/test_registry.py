@@ -7,7 +7,6 @@ import pytest
 from litscope.analysis.base import BaseAnalyzer
 from litscope.analysis.models import AnalysisContext, AnalysisResult, WorkData
 from litscope.analysis.registry import AnalyzerRegistry
-from litscope.config import LitScopeSettings
 from litscope.exceptions import AnalyzerNotFoundError, CircularDependencyError
 
 
@@ -19,9 +18,7 @@ def _clean_registry() -> None:  # type: ignore[misc]
     AnalyzerRegistry.clear()
 
 
-def _make_analyzer(
-    name: str, deps: tuple[str, ...] = ()
-) -> type[BaseAnalyzer]:
+def _make_analyzer(name: str, deps: tuple[str, ...] = ()) -> type[BaseAnalyzer]:
     """Create a concrete analyzer class with given name and dependencies."""
     cls = type(
         f"_Test{name.title()}Analyzer",

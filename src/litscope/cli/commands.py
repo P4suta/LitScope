@@ -5,7 +5,6 @@ from pathlib import Path
 import click
 
 from litscope.config import get_settings
-from litscope.ingestion.pipeline import IngestionPipeline
 from litscope.logging import setup_logging
 from litscope.storage.database import Database
 
@@ -21,6 +20,8 @@ def cli() -> None:
 @click.option("--db-path", type=click.Path(path_type=Path), default=None)
 def ingest(epub_dir: Path, db_path: Path | None) -> None:
     """Ingest EPUB files from a directory."""
+    from litscope.ingestion.pipeline import IngestionPipeline
+
     settings = get_settings()
     setup_logging(settings.log_level)
     db_path = db_path or settings.db_path
@@ -64,3 +65,43 @@ def status(db_path: Path | None) -> None:
     click.echo(f"Chapters:  {chapters[0]}")
     click.echo(f"Sentences: {sentences[0]}")
     click.echo(f"Tokens:    {tokens[0]}")
+
+
+@cli.command()
+@click.option("--work", default=None, help="Analyze a specific work ID only.")
+@click.option(
+    "--analyzers", default=None, help="Comma-separated list of analyzer names."
+)
+@click.option("--db-path", type=click.Path(path_type=Path), default=None)
+def analyze(work: str | None, analyzers: str | None, db_path: Path | None) -> None:
+    """Run analysis pipeline on ingested works."""
+    from litscope.analysis.orchestrator import PipelineOrchestrator
+    from litscope.analysis.registry import AnalyzerRegistry
+
+    settings = get_settings()
+    setup_logging(settings.log_level)
+    db_path = db_path or settings.db_path
+
+    names = [a.strip() for a in analyzers.split(",")] if analyzers else None
+
+    with Database(db_path) as db:
+        db.migrate()
+        AnalyzerRegistry.discover()
+        orchestrator = PipelineOrchestrator(db, settings)
+
+        if work:
+            results = orchestrator.run(work, names)
+            click.echo(f"Completed: {len(results)} analyzers for {work}")
+            for r in results:
+                click.echo(f"  [OK] {r.analyzer_name}")
+        else:
+            all_results = orchestrator.run_all_works(names)
+            total_works = len(all_results)
+            total_analyzers = sum(len(v) for v in all_results.values())
+            click.echo(
+                f"Completed: {total_analyzers} analyses across {total_works} works"
+            )
+            for work_id, results in all_results.items():
+                click.echo(f"  {work_id}: {len(results)} analyzers")
+                for r in results:
+                    click.echo(f"    [OK] {r.analyzer_name}")

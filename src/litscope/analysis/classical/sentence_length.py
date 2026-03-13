@@ -20,7 +20,9 @@ class SentenceLengthAnalyzer(BaseAnalyzer):
 
     def analyze(self, work_data: WorkData, context: AnalysisContext) -> AnalysisResult:
         """Compute mean, median, stdev, min, max of sentence word counts."""
-        lengths = [s.word_count for s in work_data.sentences if s.word_count is not None]
+        lengths = [
+            s.word_count for s in work_data.sentences if s.word_count is not None
+        ]
 
         if not lengths:
             return AnalysisResult(

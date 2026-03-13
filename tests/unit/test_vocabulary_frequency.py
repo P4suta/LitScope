@@ -36,14 +36,14 @@ class TestVocabularyFrequencyAnalyzer:
         result = analyzer.analyze(work_data, AnalysisContext())
         freqs = result.data["frequencies"]
         lemmas = list(freqs.keys())
-        counts = [freqs[l]["count"] for l in lemmas]
+        counts = [freqs[lemma]["count"] for lemma in lemmas]
         assert counts == sorted(counts, reverse=True)
 
     def test_metrics(self, seeded_db: Database, work_data: WorkData) -> None:
         analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
         result = analyzer.analyze(work_data, AnalysisContext())
         assert result.metrics["total_tokens"] == 17.0
-        # Types: the, cat, sit, on, mat, dog, chase, quickly, morning, come, with, gentle, sunlight = 13
+        # 13 unique lemmas
         assert result.metrics["total_types"] == 13.0
 
     def test_excludes_punct(self, seeded_db: Database, work_data: WorkData) -> None:

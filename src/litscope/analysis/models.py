@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from litscope.storage.database import Database
 from litscope.storage.models import Chapter, Sentence, Token, Work
+
+if TYPE_CHECKING:
+    from litscope.storage.database import Database
 
 
 @dataclass(frozen=True)
@@ -51,8 +53,8 @@ class WorkData:
         """Load work metadata from the database."""
         row = self._db.conn.execute(
             "SELECT work_id, title, author, file_path, file_hash, "
-            "pub_year, genre, language, word_count, sent_count, chap_count, ingested_at "
-            "FROM works WHERE work_id = ?",
+            "pub_year, genre, language, word_count, sent_count, "
+            "chap_count, ingested_at FROM works WHERE work_id = ?",
             [self.work_id],
         ).fetchone()
         if row is None:

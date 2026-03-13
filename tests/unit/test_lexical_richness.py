@@ -44,8 +44,8 @@ class TestLexicalRichnessAnalyzer:
     def test_hapax_ratio(self, seeded_db: Database, work_data: WorkData) -> None:
         analyzer, ctx = self._run_with_context(seeded_db, work_data)
         result = analyzer.analyze(work_data, ctx)
-        # Hapax (count=1): sit, mat, dog, chase, quickly, morning, come, with, gentle, sunlight = 10
-        # on appears 1 time → hapax too = 11
+        # Hapax (count=1): sit, mat, dog, chase, quickly,
+        # morning, come, with, gentle, sunlight, on = 11
         # cat appears 2 times → not hapax
         # the appears 4 times → not hapax
         assert result.metrics["hapax_ratio"] == pytest.approx(11 / 17)
@@ -76,6 +76,10 @@ class TestLexicalRichnessAnalyzer:
         result = analyzer.analyze(wd, ctx)
         assert result.metrics["ttr"] == 0.0
         assert result.metrics["mtld"] == 0.0
+
+    def test_mtld_empty_tokens(self, seeded_db: Database) -> None:
+        analyzer = LexicalRichnessAnalyzer(seeded_db, LitScopeSettings())
+        assert analyzer._mtld_one_direction([]) == 0.0
 
     def test_stores_in_analysis_results(
         self, seeded_db: Database, work_data: WorkData

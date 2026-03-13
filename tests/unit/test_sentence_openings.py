@@ -64,6 +64,37 @@ class TestSentenceOpeningsAnalyzer:
         ).fetchall()
         assert len(rows) > 0
 
+    def test_all_punct_sentence_skipped(self, seeded_db: Database) -> None:
+        """Sentence with only PUNCT tokens should be skipped."""
+        conn = seeded_db.conn
+        conn.execute(
+            "INSERT INTO sentences (sentence_id, work_id, chapter_id, position, "
+            "text, word_count, char_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                "test-work::ch000::s999",
+                "test-work",
+                "test-work::ch000",
+                99,
+                "...",
+                0,
+                3,
+            ],
+        )
+        conn.execute(
+            "INSERT INTO tokens (work_id, sentence_id, position, "
+            "token, lemma, pos, is_stop) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            ["test-work", "test-work::ch000::s999", 0, "...", "...", "PUNCT", False],
+        )
+        wd = WorkData(work_id="test-work", _db=seeded_db)
+        settings = LitScopeSettings()
+        ctx = AnalysisContext()
+        pos_dist = PosDistributionAnalyzer(seeded_db, settings)
+        ctx.set("pos_distribution", pos_dist.analyze(wd, ctx))
+        analyzer = SentenceOpeningsAnalyzer(seeded_db, settings)
+        result = analyzer.analyze(wd, ctx)
+        # The all-PUNCT sentence should not count toward total_sentences
+        assert result.metrics["total_sentences"] == 3.0
+
     def test_empty_work(self, tmp_db: Database) -> None:
         conn = tmp_db.conn
         conn.execute(

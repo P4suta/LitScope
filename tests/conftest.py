@@ -172,12 +172,20 @@ def seeded_db(tmp_db: Database) -> Database:
         ("test-work", "test-work::ch001::s000", 1, "came", "come", "VERB", False),
         ("test-work", "test-work::ch001::s000", 2, "with", "with", "ADP", True),
         ("test-work", "test-work::ch001::s000", 3, "gentle", "gentle", "ADJ", False),
-        ("test-work", "test-work::ch001::s000", 4, "sunlight", "sunlight", "NOUN", False),
+        (
+            "test-work",
+            "test-work::ch001::s000",
+            4,
+            "sunlight",
+            "sunlight",
+            "NOUN",
+            False,
+        ),
         ("test-work", "test-work::ch001::s000", 5, ".", ".", "PUNCT", False),
     ]
     conn.executemany(
-        "INSERT INTO tokens (work_id, sentence_id, position, token, lemma, pos, is_stop) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO tokens (work_id, sentence_id, position, "
+        "token, lemma, pos, is_stop) VALUES (?, ?, ?, ?, ?, ?, ?)",
         tokens_s0 + tokens_s1 + tokens_s2,
     )
     return tmp_db

@@ -54,9 +54,7 @@ class TestIngestCommand:
         create_sample_epub(epub_dir)
         db_path = tmp_path / "test.duckdb"
 
-        CliRunner().invoke(
-            cli, ["ingest", str(epub_dir), "--db-path", str(db_path)]
-        )
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
         result = CliRunner().invoke(
             cli, ["ingest", str(epub_dir), "--db-path", str(db_path)]
         )
@@ -77,13 +75,67 @@ class TestStatusCommand:
         create_sample_epub(epub_dir)
         db_path = tmp_path / "test.duckdb"
 
-        CliRunner().invoke(
-            cli, ["ingest", str(epub_dir), "--db-path", str(db_path)]
-        )
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
         result = CliRunner().invoke(cli, ["status", "--db-path", str(db_path)])
         assert result.exit_code == 0
         assert "Works:     1" in result.output
         assert "Chapters:" in result.output
+
+
+class TestAnalyzeCommand:
+    def test_analyze_success(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "analyze",
+                "--analyzers",
+                "vocabulary_frequency",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Completed:" in result.output
+        assert "vocabulary_frequency" in result.output
+
+    def test_analyze_specific_work(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "analyze",
+                "--work",
+                "sample",
+                "--analyzers",
+                "sentence_length",
+                "--db-path",
+                str(db_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "[OK] sentence_length" in result.output
+
+    def test_analyze_all_analyzers(self, tmp_path: Path) -> None:
+        epub_dir = tmp_path / "epubs"
+        epub_dir.mkdir()
+        create_sample_epub(epub_dir)
+        db_path = tmp_path / "test.duckdb"
+
+        CliRunner().invoke(cli, ["ingest", str(epub_dir), "--db-path", str(db_path)])
+        result = CliRunner().invoke(cli, ["analyze", "--db-path", str(db_path)])
+        assert result.exit_code == 0
+        assert "Completed:" in result.output
 
 
 class TestCliGroup:

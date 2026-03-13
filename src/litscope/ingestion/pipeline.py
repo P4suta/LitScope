@@ -101,8 +101,7 @@ class IngestionPipeline:
 
         # Normalize all chapters
         normalized_chapters = [
-            (ch, self._normalizer.normalize(ch.html_content))
-            for ch in parsed.chapters
+            (ch, self._normalizer.normalize(ch.html_content)) for ch in parsed.chapters
         ]
 
         total_sentences = 0

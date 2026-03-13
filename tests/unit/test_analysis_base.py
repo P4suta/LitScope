@@ -27,9 +27,7 @@ class TestBaseAnalyzer:
                 return AnalysisResult(self.name, work_data.work_id, {}, {})
 
         analyzer = DummyAnalyzer(seeded_db, LitScopeSettings())
-        result = analyzer.analyze(
-            WorkData("test-work", seeded_db), AnalysisContext()
-        )
+        result = analyzer.analyze(WorkData("test-work", seeded_db), AnalysisContext())
         assert result.analyzer_name == "_test_dummy_base"
 
     def test_store_result(self, seeded_db: Database) -> None:
@@ -42,7 +40,9 @@ class TestBaseAnalyzer:
                 return AnalysisResult(self.name, work_data.work_id, {"x": 1.0}, {})
 
         analyzer = StoreDummy(seeded_db, LitScopeSettings())
-        result = AnalysisResult("_test_store_dummy", "test-work", {"x": 1.0}, {"k": "v"})
+        result = AnalysisResult(
+            "_test_store_dummy", "test-work", {"x": 1.0}, {"k": "v"}
+        )
         analyzer.store_result(result)
 
         row = seeded_db.conn.execute(

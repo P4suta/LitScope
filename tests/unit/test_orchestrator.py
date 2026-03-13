@@ -27,9 +27,7 @@ class TestPipelineOrchestrator:
             def analyze(
                 self, work_data: WorkData, context: AnalysisContext
             ) -> AnalysisResult:
-                return AnalysisResult(
-                    self.name, work_data.work_id, {"count": 1.0}, {}
-                )
+                return AnalysisResult(self.name, work_data.work_id, {"count": 1.0}, {})
 
         orchestrator = PipelineOrchestrator(seeded_db, LitScopeSettings())
         results = orchestrator.run("test-work")

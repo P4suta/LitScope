@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from litscope.analysis.base import BaseAnalyzer
 from litscope.analysis.models import AnalysisResult
@@ -45,7 +45,10 @@ class PosTransitionAnalyzer(BaseAnalyzer):
         return AnalysisResult(
             self.name,
             work_data.work_id,
-            {"total_transitions": float(total), "unique_bigrams": float(len(bigram_counts))},
+            {
+                "total_transitions": float(total),
+                "unique_bigrams": float(len(bigram_counts)),
+            },
             {"transitions": transitions},
         )
 
@@ -53,10 +56,8 @@ class PosTransitionAnalyzer(BaseAnalyzer):
         """Store transitions in pos_transitions table."""
         super().store_result(result)
         conn = self._db.conn
-        conn.execute(
-            "DELETE FROM pos_transitions WHERE work_id = ?", [result.work_id]
-        )
-        transitions: dict[str, dict[str, object]] = result.data.get("transitions", {})
+        conn.execute("DELETE FROM pos_transitions WHERE work_id = ?", [result.work_id])
+        transitions: dict[str, dict[str, Any]] = result.data.get("transitions", {})
         if transitions:
             conn.executemany(
                 "INSERT INTO pos_transitions (work_id, from_pos, to_pos, count, ratio) "
@@ -66,7 +67,7 @@ class PosTransitionAnalyzer(BaseAnalyzer):
                         result.work_id,
                         info["from_pos"],
                         info["to_pos"],
-                        int(info["count"]),  # type: ignore[arg-type]
+                        int(info["count"]),
                         info["ratio"],
                     )
                     for info in transitions.values()

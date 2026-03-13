@@ -100,9 +100,7 @@ class TestIngestionPipeline:
 
 
 class TestDifferentialIngestion:
-    def test_skip_unchanged(
-        self, pipeline: IngestionPipeline, epub_dir: Path
-    ) -> None:
+    def test_skip_unchanged(self, pipeline: IngestionPipeline, epub_dir: Path) -> None:
         pipeline.ingest_directory(epub_dir)
         summary = pipeline.ingest_directory(epub_dir)
         assert summary.skipped == 1

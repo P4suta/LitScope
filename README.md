@@ -51,8 +51,14 @@ uv run litscope ingest <epub-directory>
 # Check database status / データベース状態の確認 / 查看数据库状态
 uv run litscope status
 
-# Run analysis pipeline (Phase 2) / 分析パイプライン実行 / 运行分析管道
+# Run all analyzers / 全分析モジュール実行 / 运行所有分析模块
 uv run litscope analyze
+
+# Run specific analyzers / 特定モジュール実行 / 运行特定模块
+uv run litscope analyze --analyzers vocabulary_frequency,lexical_richness
+
+# Analyze a single work / 特定作品の分析 / 分析单个作品
+uv run litscope analyze --work <work-id> --analyzers sentence_length
 
 # Start API server (Phase 3) / API サーバー起動 / 启动 API 服务器
 uv run litscope serve
@@ -85,6 +91,31 @@ EPUB File → EpubParser → MetadataExtractor → TextNormalizer → Database
            HTML chapters   title/author      sentences/tokens
 ```
 
+### Analysis Pipeline / 分析パイプライン / 分析管道
+
+LitScope uses a plugin-based analyzer framework with automatic dependency resolution.
+
+LitScope はプラグインベースの分析フレームワークを使用し、依存関係を自動解決します。
+
+LitScope 使用基于插件的分析框架，自动解析依赖关系。
+
+**Classical Analyzers / 古典分析 / 经典分析:**
+| Analyzer | Description / 説明 / 描述 |
+|---|---|
+| `vocabulary_frequency` | Lemma frequencies and TF / 語彙頻度と TF / 词频与 TF |
+| `lexical_richness` | TTR, hapax ratio, Yule's K, MTLD / 語彙豊富さ指標 / 词汇丰富度 |
+| `sentence_length` | Mean, median, stdev of sentence lengths / 文長統計 / 句长统计 |
+| `readability` | Flesch-Kincaid, Coleman-Liau, ARI / 可読性指標 / 可读性指标 |
+| `zipf_fitness` | Zipf's law fit (alpha, R²) / ジップの法則適合度 / 齐普夫定律拟合 |
+
+**Syntactic Analyzers / 構文分析 / 句法分析:**
+| Analyzer | Description / 説明 / 描述 |
+|---|---|
+| `pos_distribution` | POS tag frequencies and ratios / 品詞分布 / 词性分布 |
+| `pos_transition` | POS bigram transition matrix / 品詞遷移行列 / 词性转移矩阵 |
+| `sentence_openings` | First 1-3 POS patterns / 文頭パターン / 句首模式 |
+| `voice_ratio` | Active/passive voice ratio / 能動態・受動態比率 / 主被动语态比率 |
+
 ### Data Model / データモデル / 数据模型
 
 | Table / テーブル | Description / 説明 / 描述 |
@@ -93,6 +124,11 @@ EPUB File → EpubParser → MetadataExtractor → TextNormalizer → Database
 | `chapters` | Chapters within works / チャプター / 章节 |
 | `sentences` | Sentences with text and counts / 文 / 句子 |
 | `tokens` | Tokens with lemma, POS, stop word flag / トークン / 词元 |
+| `analysis_results` | Analyzer outputs with metrics / 分析結果 / 分析结果 |
+| `word_frequencies` | Per-work lemma frequencies / 語彙頻度 / 词频 |
+| `pos_distributions` | POS tag distributions / 品詞分布 / 词性分布 |
+| `pos_transitions` | POS bigram transitions / 品詞遷移 / 词性转移 |
+| `sentence_opening_patterns` | Sentence opening POS patterns / 文頭パターン / 句首模式 |
 
 ## Development / 開発 / 开发
 
@@ -123,6 +159,9 @@ All settings use environment variables with `LITSCOPE_` prefix. Defaults are pro
 | `LITSCOPE_EPUB_DIR` | `data/epubs` | Default EPUB directory |
 | `LITSCOPE_LOG_LEVEL` | `INFO` | Logging level |
 | `LITSCOPE_SPACY_MODEL` | `en_core_web_sm` | spaCy model name |
+| `LITSCOPE_SENTIMENT_SEGMENTS` | `100` | Number of sentiment arc segments |
+| `LITSCOPE_DIALOGUE_SEGMENTS` | `100` | Number of dialogue density segments |
+| `LITSCOPE_TIME_SLICE_YEARS` | `25` | Time slice width for temporal analysis |
 
 ## Tech Stack / 技術スタック / 技术栈
 
