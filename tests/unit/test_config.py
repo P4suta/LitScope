@@ -14,6 +14,11 @@ class TestLitScopeSettings:
         assert settings.epub_dir == Path("data/epubs")
         assert settings.log_level == "INFO"
         assert settings.spacy_model == "en_core_web_sm"
+        assert settings.sentiment_model == "nlptown/bert-base-multilingual-uncased-sentiment"
+        assert settings.embedding_model == "all-MiniLM-L6-v2"
+        assert settings.sentiment_segments == 100
+        assert settings.dialogue_segments == 100
+        assert settings.time_slice_years == 25
 
     def test_path_types(self) -> None:
         settings = LitScopeSettings()
@@ -26,6 +31,13 @@ class TestLitScopeSettings:
         settings = LitScopeSettings()
         assert settings.db_path == Path("/tmp/test.duckdb")
         assert settings.log_level == "DEBUG"
+
+    def test_analysis_env_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("LITSCOPE_SENTIMENT_SEGMENTS", "50")
+        monkeypatch.setenv("LITSCOPE_TIME_SLICE_YEARS", "10")
+        settings = LitScopeSettings()
+        assert settings.sentiment_segments == 50
+        assert settings.time_slice_years == 10
 
     def test_env_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("LITSCOPE_EPUB_DIR", "/data/books")

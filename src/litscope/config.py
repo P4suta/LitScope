@@ -15,6 +15,11 @@ class LitScopeSettings(BaseSettings):
     epub_dir: Path = Path("data/epubs")
     log_level: str = "INFO"
     spacy_model: str = "en_core_web_sm"
+    sentiment_model: str = "nlptown/bert-base-multilingual-uncased-sentiment"
+    embedding_model: str = "all-MiniLM-L6-v2"
+    sentiment_segments: int = 100
+    dialogue_segments: int = 100
+    time_slice_years: int = 25
 
 
 @lru_cache(maxsize=1)
