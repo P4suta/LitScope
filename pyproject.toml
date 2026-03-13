@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-hq = ["spacy-transformers>=1.3"]
+hq = ["spacy-transformers>=1.3", "transformers>=4.53.0"]
 
 [project.scripts]
 litscope = "litscope.cli.commands:cli"
@@ -40,6 +40,9 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.8",
 ]
+
+[tool.uv]
+override-dependencies = ["transformers>=4.53.0"]
 
 [tool.ruff]
 target-version = "py312"
