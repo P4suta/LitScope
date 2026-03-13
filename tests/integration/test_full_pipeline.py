@@ -61,13 +61,13 @@ class TestIngestThenQuery:
         create_sample_epub(epub_dir)
 
         db_path = tmp_path / "test.duckdb"
-        settings = LitScopeSettings(db_path=db_path)
+        settings = LitScopeSettings(db_path=db_path, epub_dir=tmp_path)
         app = create_app(settings=settings)
 
         with TestClient(app) as client:
             resp = client.post(
                 "/api/v1/ingest",
-                json={"epub_dir": str(epub_dir)},
+                json={"epub_dir": "epubs"},
             )
             assert resp.status_code == 200
             data = resp.json()
@@ -205,7 +205,7 @@ class TestErrorPaths:
         """POST /ingest with non-existent directory returns 400."""
         resp = integration_client.post(
             "/api/v1/ingest",
-            json={"epub_dir": "/nonexistent/path"},
+            json={"epub_dir": "nonexistent_dir"},
         )
         assert resp.status_code == 400
 
