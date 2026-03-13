@@ -31,3 +31,18 @@ class CircularDependencyError(AnalysisError):
 
 class DependencyNotSatisfiedError(AnalysisError):
     """Raised when a required dependency has not been satisfied."""
+
+
+class WorkNotFoundError(LitScopeError):
+    """Raised when a work is not found in the database."""
+
+
+HTTP_STATUS_MAP: dict[type[LitScopeError], tuple[int, str]] = {
+    EpubParseError: (422, "Unprocessable Entity"),
+    IngestionError: (422, "Unprocessable Entity"),
+    AnalyzerNotFoundError: (404, "Not Found"),
+    WorkNotFoundError: (404, "Not Found"),
+    CircularDependencyError: (400, "Bad Request"),
+    DependencyNotSatisfiedError: (400, "Bad Request"),
+    DatabaseError: (500, "Internal Server Error"),
+}
