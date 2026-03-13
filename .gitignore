@@ -32,6 +32,7 @@ frontend/src/routeTree.gen.ts
 frontend/src/api/schema.d.ts
 *.tsbuildinfo
 *.d.ts.map
+frontend/vite.config.d.ts
 
 # Data
 data/
