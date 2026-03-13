@@ -1,11 +1,10 @@
 """Ingest endpoint."""
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, HTTPException
 
-from litscope.api.dependencies import get_db
+from litscope.api.dependencies import get_db, get_settings
 from litscope.api.schemas.ingest import IngestRequest, IngestResponse, IngestResultItem
+from litscope.config import LitScopeSettings
 from litscope.storage.database import Database
 
 router = APIRouter(tags=["ingest"])
@@ -13,19 +12,24 @@ router = APIRouter(tags=["ingest"])
 
 @router.post("/ingest")
 def ingest_epubs(
-    request: IngestRequest, db: Database = Depends(get_db)
+    request: IngestRequest,
+    db: Database = Depends(get_db),
+    settings: LitScopeSettings = Depends(get_settings),
 ) -> IngestResponse:
     """Ingest EPUB files from a directory."""
     from litscope.ingestion.pipeline import IngestionPipeline
 
-    epub_dir = Path(request.epub_dir)
-    if not epub_dir.exists():
+    base = settings.epub_dir.resolve()
+    target = (base / request.epub_dir).resolve()
+    if not target.is_relative_to(base):
+        raise HTTPException(status_code=403, detail="Path traversal is not allowed")
+    if not target.exists():
         raise HTTPException(
             status_code=400, detail=f"Directory not found: {request.epub_dir}"
         )
 
     pipeline = IngestionPipeline(db=db)
-    summary = pipeline.ingest_directory(epub_dir)
+    summary = pipeline.ingest_directory(target)
 
     return IngestResponse(
         total=summary.total,
