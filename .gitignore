@@ -14,6 +14,7 @@ LitScope 技術設計書.md
 !.env.example
 
 # Python
+.coverage
 __pycache__/
 *.pyc
 *.pyo
