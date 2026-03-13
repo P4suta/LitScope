@@ -50,9 +50,40 @@ class TestMigration:
         with Database(":memory:") as db:
             db.migrate()
             db.migrate()  # Should not raise
-            migrations = db.conn.execute("SELECT name FROM _migrations").fetchall()
-            assert len(migrations) == 1
+            migrations = db.conn.execute(
+                "SELECT name FROM _migrations ORDER BY name"
+            ).fetchall()
+            assert len(migrations) == 2
             assert migrations[0][0] == "001_initial.sql"
+            assert migrations[1][0] == "002_analysis_tables.sql"
+
+    def test_analysis_tables_exist(self) -> None:
+        with Database(":memory:") as db:
+            db.migrate()
+            tables = {
+                row[0]
+                for row in db.conn.execute(
+                    "SELECT table_name FROM information_schema.tables "
+                    "WHERE table_schema = 'main'"
+                ).fetchall()
+            }
+            expected = {
+                "analysis_results",
+                "word_frequencies",
+                "pos_distributions",
+                "pos_transitions",
+                "sentence_opening_patterns",
+                "sentiment_scores",
+                "character_relations",
+                "topics",
+                "work_topics",
+                "style_features",
+                "author_embeddings",
+                "ngrams",
+                "vocabulary_ages",
+                "dialogue_density",
+            }
+            assert expected <= tables
 
     def test_insert_and_read_work(self) -> None:
         with Database(":memory:") as db:
