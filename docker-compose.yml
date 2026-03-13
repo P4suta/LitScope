@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - litscope-data:/app/data
+    environment:
+      LITSCOPE_DB_PATH: /app/data/litscope.duckdb
+      LITSCOPE_EPUB_DIR: /app/data/epubs
+      LITSCOPE_LOG_LEVEL: INFO
+      LITSCOPE_API_HOST: "0.0.0.0"
+      LITSCOPE_API_PORT: "8000"
+    restart: unless-stopped
+
+volumes:
+  litscope-data:
