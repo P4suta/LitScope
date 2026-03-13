@@ -104,6 +104,79 @@ def serve(host: str | None, port: int | None, db_path: Path | None) -> None:
 
 
 @cli.command()
+@click.option(
+    "--work",
+    default=None,
+    multiple=True,
+    help="Work ID(s) to benchmark. Omit for all.",
+)
+@click.option(
+    "--analyzers", default=None, help="Comma-separated list of analyzer names."
+)
+@click.option("--db-path", type=click.Path(path_type=Path), default=None)
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["table", "csv", "json"]),
+    default="table",
+    help="Output format.",
+)
+@click.option(
+    "--cprofile",
+    is_flag=True,
+    default=False,
+    help="Enable cProfile and save .prof file.",
+)
+def benchmark(
+    work: tuple[str, ...],
+    analyzers: str | None,
+    db_path: Path | None,
+    fmt: str,
+    cprofile: bool,
+) -> None:
+    """Run pipeline benchmark with timing and memory profiling."""
+    import cProfile as cprofile_mod  # noqa: N813
+
+    from litscope.analysis.orchestrator import PipelineOrchestrator
+    from litscope.analysis.registry import AnalyzerRegistry
+    from litscope.cli.benchmark import FORMATTERS, PipelineBenchmark
+
+    settings = get_settings()
+    setup_logging(settings.log_level)
+    db_path = db_path or settings.db_path
+
+    names = [a.strip() for a in analyzers.split(",")] if analyzers else None
+
+    with Database(db_path) as db:
+        db.migrate()
+        AnalyzerRegistry.discover()
+        orchestrator = PipelineOrchestrator(db, settings)
+        bm = PipelineBenchmark(orchestrator)
+
+        work_ids = list(work) if work else [
+            row[0] for row in db.conn.execute("SELECT work_id FROM works").fetchall()
+        ]
+
+        if not work_ids:
+            click.echo("No works found. Run 'litscope ingest' first.")
+            return
+
+        if cprofile:
+            prof = cprofile_mod.Profile()
+            prof.enable()
+
+        result = bm.run(work_ids, names)
+
+        if cprofile:
+            prof.disable()
+            prof_path = Path("litscope_benchmark.prof")
+            prof.dump_stats(str(prof_path))
+            click.echo(f"cProfile data saved to {prof_path}")
+
+    click.echo(FORMATTERS[fmt](result))
+
+
+@cli.command()
 @click.option("--work", default=None, help="Analyze a specific work ID only.")
 @click.option(
     "--analyzers", default=None, help="Comma-separated list of analyzer names."
