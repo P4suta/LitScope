@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from ebooklib import epub
 
+from litscope.analysis.models import WorkData
 from litscope.storage.database import Database
 
 
@@ -73,3 +74,116 @@ def tmp_db() -> Database:
     db.connect()
     db.migrate()
     return db
+
+
+@pytest.fixture
+def seeded_db(tmp_db: Database) -> Database:
+    """DB with a sample work: 2 chapters, 3 sentences, ~20 tokens."""
+    conn = tmp_db.conn
+    conn.execute(
+        "INSERT INTO works (work_id, title, author, file_path, file_hash, "
+        "pub_year, language, word_count, sent_count, chap_count) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            "test-work",
+            "Test Title",
+            "Test Author",
+            "/path/to/test.epub",
+            "abc123hash",
+            1920,
+            "en",
+            20,
+            3,
+            2,
+        ],
+    )
+    conn.execute(
+        "INSERT INTO chapters (chapter_id, work_id, position, title, "
+        "word_count, sent_count) VALUES (?, ?, ?, ?, ?, ?)",
+        ["test-work::ch000", "test-work", 0, "Chapter 1", 14, 2],
+    )
+    conn.execute(
+        "INSERT INTO chapters (chapter_id, work_id, position, title, "
+        "word_count, sent_count) VALUES (?, ?, ?, ?, ?, ?)",
+        ["test-work::ch001", "test-work", 1, "Chapter 2", 6, 1],
+    )
+    conn.execute(
+        "INSERT INTO sentences (sentence_id, work_id, chapter_id, position, "
+        "text, word_count, char_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+            "test-work::ch000::s000",
+            "test-work",
+            "test-work::ch000",
+            0,
+            "The cat sat on the mat.",
+            6,
+            23,
+        ],
+    )
+    conn.execute(
+        "INSERT INTO sentences (sentence_id, work_id, chapter_id, position, "
+        "text, word_count, char_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+            "test-work::ch000::s001",
+            "test-work",
+            "test-work::ch000",
+            1,
+            "The dog chased the cat quickly.",
+            6,
+            30,
+        ],
+    )
+    conn.execute(
+        "INSERT INTO sentences (sentence_id, work_id, chapter_id, position, "
+        "text, word_count, char_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+            "test-work::ch001::s000",
+            "test-work",
+            "test-work::ch001",
+            2,
+            "Morning came with gentle sunlight.",
+            5,
+            34,
+        ],
+    )
+    # Tokens for sentence 1: "The cat sat on the mat."
+    tokens_s0 = [
+        ("test-work", "test-work::ch000::s000", 0, "The", "the", "DET", True),
+        ("test-work", "test-work::ch000::s000", 1, "cat", "cat", "NOUN", False),
+        ("test-work", "test-work::ch000::s000", 2, "sat", "sit", "VERB", False),
+        ("test-work", "test-work::ch000::s000", 3, "on", "on", "ADP", True),
+        ("test-work", "test-work::ch000::s000", 4, "the", "the", "DET", True),
+        ("test-work", "test-work::ch000::s000", 5, "mat", "mat", "NOUN", False),
+        ("test-work", "test-work::ch000::s000", 6, ".", ".", "PUNCT", False),
+    ]
+    # Tokens for sentence 2: "The dog chased the cat quickly."
+    tokens_s1 = [
+        ("test-work", "test-work::ch000::s001", 0, "The", "the", "DET", True),
+        ("test-work", "test-work::ch000::s001", 1, "dog", "dog", "NOUN", False),
+        ("test-work", "test-work::ch000::s001", 2, "chased", "chase", "VERB", False),
+        ("test-work", "test-work::ch000::s001", 3, "the", "the", "DET", True),
+        ("test-work", "test-work::ch000::s001", 4, "cat", "cat", "NOUN", False),
+        ("test-work", "test-work::ch000::s001", 5, "quickly", "quickly", "ADV", False),
+        ("test-work", "test-work::ch000::s001", 6, ".", ".", "PUNCT", False),
+    ]
+    # Tokens for sentence 3: "Morning came with gentle sunlight."
+    tokens_s2 = [
+        ("test-work", "test-work::ch001::s000", 0, "Morning", "morning", "NOUN", False),
+        ("test-work", "test-work::ch001::s000", 1, "came", "come", "VERB", False),
+        ("test-work", "test-work::ch001::s000", 2, "with", "with", "ADP", True),
+        ("test-work", "test-work::ch001::s000", 3, "gentle", "gentle", "ADJ", False),
+        ("test-work", "test-work::ch001::s000", 4, "sunlight", "sunlight", "NOUN", False),
+        ("test-work", "test-work::ch001::s000", 5, ".", ".", "PUNCT", False),
+    ]
+    conn.executemany(
+        "INSERT INTO tokens (work_id, sentence_id, position, token, lemma, pos, is_stop) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        tokens_s0 + tokens_s1 + tokens_s2,
+    )
+    return tmp_db
+
+
+@pytest.fixture
+def work_data(seeded_db: Database) -> WorkData:
+    """WorkData instance for the seeded test work."""
+    return WorkData(work_id="test-work", _db=seeded_db)
