@@ -3,13 +3,13 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class LitScopeSettings(BaseSettings):
     """Application settings loaded from environment variables with LITSCOPE_ prefix."""
 
-    model_config = {"env_prefix": "LITSCOPE_"}
+    model_config = SettingsConfigDict(env_prefix="LITSCOPE_")
 
     db_path: Path = Path("litscope.duckdb")
     epub_dir: Path = Path("data/epubs")
