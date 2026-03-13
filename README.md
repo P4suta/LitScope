@@ -1,5 +1,7 @@
 # LitScope
 
+[![CI](https://github.com/your-org/litscope/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/litscope/actions/workflows/ci.yml)
+
 **Literary text analysis platform for computational literary studies.**
 
 LitScope analyzes Standard Ebooks EPUB corpora using 20 analysis modules — from classical text statistics to NLP-based syntactic analysis and machine learning-driven topic modeling — and presents results via an interactive dashboard.
@@ -23,8 +25,10 @@ LitScope 以 Standard Ebooks 的 EPUB 语料库为对象，集成了从经典文
 - **EPUB Ingestion** — Parse Standard Ebooks EPUB files with differential ingestion (skip unchanged files)
 - **Text Normalization** — HTML stripping, NFKC Unicode normalization, spaCy tokenization
 - **20 Analysis Modules** — Vocabulary statistics, syntactic analysis, topic modeling, sentiment analysis, stylometry, and more
-- **Interactive Dashboard** — React + D3.js visualization of analysis results
+- **REST API** — FastAPI with RFC 7807 error responses and OpenAPI auto-generation
 - **CLI** — Command-line interface for ingestion, analysis, and serving
+- **Docker Deployment** — Single-command deployment with Docker Compose
+- **Interactive Dashboard** — React + D3.js visualization of analysis results (coming soon)
 
 ## Quick Start / クイックスタート / 快速开始
 
@@ -32,7 +36,6 @@ LitScope 以 Standard Ebooks 的 EPUB 语料库为对象，集成了从经典文
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
-- spaCy English model: `uv pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl`
 
 ### Installation / インストール / 安装
 
@@ -48,6 +51,12 @@ uv sync
 # Ingest EPUB files / EPUB ファイルの取り込み / 导入 EPUB 文件
 uv run litscope ingest <epub-directory>
 
+# Ingest with high-quality transformer model / 高品質トランスフォーマーモデルで取り込み / 使用高质量模型导入
+uv run litscope ingest --hq <epub-directory>
+
+# Ingest with a specific spaCy model / 特定の spaCy モデルで取り込み / 使用指定模型导入
+uv run litscope ingest --model en_core_web_lg <epub-directory>
+
 # Check database status / データベース状態の確認 / 查看数据库状态
 uv run litscope status
 
@@ -60,9 +69,28 @@ uv run litscope analyze --analyzers vocabulary_frequency,lexical_richness
 # Analyze a single work / 特定作品の分析 / 分析单个作品
 uv run litscope analyze --work <work-id> --analyzers sentence_length
 
-# Start API server (Phase 3) / API サーバー起動 / 启动 API 服务器
+# Start API server / API サーバー起動 / 启动 API 服务器
 uv run litscope serve
 ```
+
+### Docker Deployment / Docker デプロイ / Docker 部署
+
+```bash
+# Build and start / ビルドして起動 / 构建并启动
+docker compose up -d
+
+# View logs / ログ確認 / 查看日志
+docker compose logs -f api
+
+# Stop / 停止
+docker compose down
+```
+
+The API is available at `http://localhost:8000`. See [API Documentation](docs/api.md) for endpoint details.
+
+Docker は `http://localhost:8000` で API を提供します。エンドポイントの詳細は [API ドキュメント](docs/api.md) を参照してください。
+
+API 在 `http://localhost:8000` 提供服务。端点详情请参阅 [API 文档](docs/api.md)。
 
 ## Architecture / アーキテクチャ / 架构
 
@@ -136,8 +164,14 @@ LitScope 使用基于插件的分析框架，自动解析依赖关系。
 # Run tests / テスト実行 / 运行测试
 uv run pytest
 
+# Run unit tests only / ユニットテストのみ / 仅运行单元测试
+uv run pytest tests/unit/
+
+# Run integration tests / 統合テスト / 运行集成测试
+uv run pytest tests/integration/
+
 # Run tests with coverage / カバレッジ付きテスト / 运行带覆盖率的测试
-uv run pytest --cov=litscope --cov-report=term-missing
+uv run pytest --cov=litscope --cov-branch --cov-report=term-missing
 
 # Lint / リント / 代码检查
 uv run ruff check src/ tests/
@@ -149,6 +183,14 @@ uv run ruff format src/ tests/
 uv run mypy src/
 ```
 
+## API / API ドキュメント / API 文档
+
+See [docs/api.md](docs/api.md) for full API documentation.
+
+詳細な API ドキュメントは [docs/api.md](docs/api.md) を参照してください。
+
+完整的 API 文档请参阅 [docs/api.md](docs/api.md)。
+
 ## Configuration / 設定 / 配置
 
 All settings use environment variables with `LITSCOPE_` prefix. Defaults are provided (zero-config policy).
@@ -158,7 +200,11 @@ All settings use environment variables with `LITSCOPE_` prefix. Defaults are pro
 | `LITSCOPE_DB_PATH` | `litscope.duckdb` | DuckDB database file path |
 | `LITSCOPE_EPUB_DIR` | `data/epubs` | Default EPUB directory |
 | `LITSCOPE_LOG_LEVEL` | `INFO` | Logging level |
-| `LITSCOPE_SPACY_MODEL` | `en_core_web_sm` | spaCy model name |
+| `LITSCOPE_SPACY_MODEL` | `en_core_web_md` | spaCy model name (default) |
+| `LITSCOPE_SPACY_MODEL_HQ` | `en_core_web_trf` | spaCy model for `--hq` mode |
+| `LITSCOPE_API_HOST` | `0.0.0.0` | API server host |
+| `LITSCOPE_API_PORT` | `8000` | API server port |
+| `LITSCOPE_CORS_ORIGINS` | `http://localhost:5173` | CORS allowed origins |
 | `LITSCOPE_SENTIMENT_SEGMENTS` | `100` | Number of sentiment arc segments |
 | `LITSCOPE_DIALOGUE_SEGMENTS` | `100` | Number of dialogue density segments |
 | `LITSCOPE_TIME_SLICE_YEARS` | `25` | Time slice width for temporal analysis |
@@ -170,6 +216,7 @@ All settings use environment variables with `LITSCOPE_` prefix. Defaults are pro
 | Backend | Python 3.12+, FastAPI, DuckDB, spaCy, BERTopic |
 | Frontend | React 19, TypeScript 5+, D3.js, Tailwind CSS, Vite |
 | Package Management | uv (Python), npm (Frontend) |
+| CI | GitHub Actions |
 | Deployment | Docker Compose |
 
 ## License / ライセンス / 许可证
