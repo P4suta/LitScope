@@ -16,20 +16,36 @@ def cli() -> None:
 
 
 @cli.command()
-@click.argument("epub_dir", type=click.Path(exists=True, path_type=Path))
+@click.argument("epub_path", type=click.Path(exists=True, path_type=Path))
 @click.option("--db-path", type=click.Path(path_type=Path), default=None)
-def ingest(epub_dir: Path, db_path: Path | None) -> None:
-    """Ingest EPUB files from a directory."""
-    from litscope.ingestion.pipeline import IngestionPipeline
+@click.option("--model", default=None, help="spaCy model name to use.")
+@click.option(
+    "--hq", is_flag=True, default=False, help="Use high-quality transformer model."
+)
+def ingest(
+    epub_path: Path, db_path: Path | None, model: str | None, hq: bool
+) -> None:
+    """Ingest EPUB files from a directory or a single file."""
+    from litscope.ingestion.pipeline import IngestionPipeline, IngestionSummary
+
+    if model and hq:
+        raise click.UsageError("Cannot use both --model and --hq.")
 
     settings = get_settings()
     setup_logging(settings.log_level)
     db_path = db_path or settings.db_path
+    model_name = (
+        model if model else settings.spacy_model_hq if hq else settings.spacy_model
+    )
 
     with Database(db_path) as db:
         db.migrate()
-        pipeline = IngestionPipeline(db=db)
-        summary = pipeline.ingest_directory(epub_dir)
+        pipeline = IngestionPipeline(db=db, model_name=model_name)
+        summary = (
+            IngestionSummary(results=[pipeline.ingest_file(epub_path)])
+            if epub_path.is_file()
+            else pipeline.ingest_directory(epub_path)
+        )
 
     click.echo(f"Total: {summary.total}")
     click.echo(f"Ingested: {summary.ingested}")
@@ -65,6 +81,28 @@ def status(db_path: Path | None) -> None:
     click.echo(f"Chapters:  {chapters[0]}")
     click.echo(f"Sentences: {sentences[0]}")
     click.echo(f"Tokens:    {tokens[0]}")
+
+
+@cli.command()
+@click.option("--host", default=None, help="Bind host.")
+@click.option("--port", type=int, default=None, help="Bind port.")
+@click.option("--db-path", type=click.Path(path_type=Path), default=None)
+def serve(host: str | None, port: int | None, db_path: Path | None) -> None:
+    """Start the API server."""
+    import uvicorn
+
+    from litscope.api.app import create_app
+
+    settings = get_settings()
+    setup_logging(settings.log_level)
+    db_path = db_path or settings.db_path
+
+    app = create_app(settings=settings)
+    uvicorn.run(
+        app,
+        host=host or settings.api_host,
+        port=port or settings.api_port,
+    )
 
 
 @cli.command()

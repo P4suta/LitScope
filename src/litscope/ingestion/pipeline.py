@@ -59,11 +59,16 @@ class IngestionPipeline:
         parser: EpubParser | None = None,
         extractor: MetadataExtractor | None = None,
         normalizer: TextNormalizer | None = None,
+        model_name: str | None = None,
     ) -> None:
         self._db = db
         self._parser = parser or EpubParser()
         self._extractor = extractor or MetadataExtractor()
-        self._normalizer = normalizer or TextNormalizer()
+        self._normalizer = normalizer or TextNormalizer(model_name=model_name)
+
+    def ingest_file(self, epub_path: Path) -> IngestionResult:
+        """Ingest a single EPUB file."""
+        return self._ingest_one(epub_path)
 
     def ingest_directory(self, epub_dir: Path) -> IngestionSummary:
         """Ingest all EPUB files in a directory."""

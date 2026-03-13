@@ -13,7 +13,8 @@ class TestLitScopeSettings:
         assert settings.db_path == Path("litscope.duckdb")
         assert settings.epub_dir == Path("data/epubs")
         assert settings.log_level == "INFO"
-        assert settings.spacy_model == "en_core_web_sm"
+        assert settings.spacy_model == "en_core_web_md"
+        assert settings.spacy_model_hq == "en_core_web_trf"
         assert (
             settings.sentiment_model
             == "nlptown/bert-base-multilingual-uncased-sentiment"
@@ -41,6 +42,13 @@ class TestLitScopeSettings:
         settings = LitScopeSettings()
         assert settings.sentiment_segments == 50
         assert settings.time_slice_years == 10
+
+    def test_spacy_model_hq_env_override(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("LITSCOPE_SPACY_MODEL_HQ", "en_core_web_lg")
+        settings = LitScopeSettings()
+        assert settings.spacy_model_hq == "en_core_web_lg"
 
     def test_env_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("LITSCOPE_EPUB_DIR", "/data/books")

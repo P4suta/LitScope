@@ -14,7 +14,11 @@ class LitScopeSettings(BaseSettings):
     db_path: Path = Path("litscope.duckdb")
     epub_dir: Path = Path("data/epubs")
     log_level: str = "INFO"
-    spacy_model: str = "en_core_web_sm"
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    cors_origins: str = "http://localhost:5173"
+    spacy_model: str = "en_core_web_md"
+    spacy_model_hq: str = "en_core_web_trf"
     sentiment_model: str = "nlptown/bert-base-multilingual-uncased-sentiment"
     embedding_model: str = "all-MiniLM-L6-v2"
     sentiment_segments: int = 100

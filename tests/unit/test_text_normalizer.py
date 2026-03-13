@@ -7,6 +7,8 @@ from litscope.ingestion.text_normalizer import (
     NormalizedSentence,
     NormalizedToken,
     TextNormalizer,
+    _is_transformer_model,
+    _load_spacy_model,
 )
 
 
@@ -91,6 +93,95 @@ class TestTextNormalizerInit:
         norm = TextNormalizer(nlp=custom_nlp)
         result = norm.normalize("<p>Hello world.</p>")
         assert result.sent_count >= 1
+
+    def test_explicit_model_name(self) -> None:
+        """Passing model_name loads that specific model."""
+        norm = TextNormalizer(model_name="en_core_web_sm")
+        result = norm.normalize("<p>Hello world.</p>")
+        assert result.sent_count >= 1
+
+    def test_default_uses_settings(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Without nlp or model_name, loads from config.spacy_model."""
+        from unittest.mock import patch
+
+        import spacy
+
+        loaded_models: list[str] = []
+        original_load = spacy.load
+
+        def tracking_load(name: str, **kwargs):  # type: ignore[no-untyped-def]
+            loaded_models.append(name)
+            return original_load(name, **kwargs)
+
+        monkeypatch.setenv("LITSCOPE_SPACY_MODEL", "en_core_web_sm")
+        # Clear cached settings so env var takes effect
+        from litscope.config import get_settings
+
+        get_settings.cache_clear()
+        try:
+            with patch("spacy.load", side_effect=tracking_load):
+                TextNormalizer()
+            assert loaded_models == ["en_core_web_sm"]
+        finally:
+            get_settings.cache_clear()
+
+
+class TestIsTransformerModel:
+    def test_trf_suffix_returns_true(self) -> None:
+        assert _is_transformer_model("en_core_web_trf") is True
+
+    def test_non_trf_suffix_returns_false(self) -> None:
+        assert _is_transformer_model("en_core_web_md") is False
+
+    def test_sm_model_returns_false(self) -> None:
+        assert _is_transformer_model("en_core_web_sm") is False
+
+
+class TestLoadSpacyModel:
+    def test_trf_model_excludes_ner_only(self) -> None:
+        from unittest.mock import MagicMock, patch
+
+        mock_nlp = MagicMock()
+        with (
+            patch("spacy.load", return_value=mock_nlp) as mock_load,
+            patch("spacy.prefer_gpu"),
+        ):
+            result = _load_spacy_model("en_core_web_trf")
+        mock_load.assert_called_once_with("en_core_web_trf", exclude=["ner"])
+        assert result is mock_nlp
+        mock_nlp.enable_pipe.assert_not_called()
+
+    def test_trf_model_calls_prefer_gpu(self) -> None:
+        from unittest.mock import MagicMock, patch
+
+        with (
+            patch("spacy.load", return_value=MagicMock()) as _,
+            patch("spacy.prefer_gpu") as mock_gpu,
+        ):
+            _load_spacy_model("en_core_web_trf")
+        mock_gpu.assert_called_once()
+
+    def test_non_trf_excludes_ner_parser_enables_senter(self) -> None:
+        from unittest.mock import MagicMock, patch
+
+        mock_nlp = MagicMock()
+        with patch("spacy.load", return_value=mock_nlp) as mock_load:
+            result = _load_spacy_model("en_core_web_md")
+        mock_load.assert_called_once_with(
+            "en_core_web_md", exclude=["ner", "parser"]
+        )
+        mock_nlp.enable_pipe.assert_called_once_with("senter")
+        assert result is mock_nlp
+
+    def test_trf_missing_dependency_error(self) -> None:
+        from unittest.mock import patch
+
+        with (
+            patch("spacy.load", side_effect=OSError("not found")),
+            patch("spacy.prefer_gpu"),
+            pytest.raises(OSError, match="Failed to load transformer model"),
+        ):
+            _load_spacy_model("en_core_web_trf")
 
 
 class TestNormalizedDataclasses:

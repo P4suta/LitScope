@@ -183,6 +183,27 @@ class TestEmptyTokenSentence:
         assert row[0] == 0
 
 
+class TestIngestFile:
+    def test_ingest_file_success(
+        self, db: Database, epub_dir: Path
+    ) -> None:
+        pipeline = IngestionPipeline(db=db)
+        result = pipeline.ingest_file(epub_dir / "sample.epub")
+        assert result.success is True
+        assert result.chapters > 0
+        assert result.tokens > 0
+
+    def test_ingest_file_error_isolation(
+        self, db: Database, tmp_path: Path
+    ) -> None:
+        bad_file = tmp_path / "bad.epub"
+        bad_file.write_bytes(b"not an epub")
+        pipeline = IngestionPipeline(db=db)
+        result = pipeline.ingest_file(bad_file)
+        assert result.success is False
+        assert result.error is not None
+
+
 class TestEmptyDirectory:
     def test_no_epubs(self, pipeline: IngestionPipeline, tmp_path: Path) -> None:
         summary = pipeline.ingest_directory(tmp_path)

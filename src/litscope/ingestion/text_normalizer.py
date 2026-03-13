@@ -49,14 +49,42 @@ class NormalizedChapter:
         return len(self.sentences)
 
 
+def _is_transformer_model(name: str) -> bool:
+    """Check if the model name refers to a transformer-based model."""
+    return name.endswith("_trf")
+
+
+def _load_spacy_model(name: str) -> Language:
+    """Load a spaCy model with appropriate pipeline configuration."""
+    if _is_transformer_model(name):
+        spacy.prefer_gpu()  # type: ignore[attr-defined]
+        try:
+            return spacy.load(name, exclude=["ner"])
+        except OSError as e:
+            msg = (
+                f"Failed to load transformer model '{name}'. "
+                f"Install with: pip install litscope[hq] && "
+                f"python -m spacy download {name}"
+            )
+            raise OSError(msg) from e
+    nlp = spacy.load(name, exclude=["ner", "parser"])
+    nlp.enable_pipe("senter")
+    return nlp
+
+
 class TextNormalizer:
     """Normalizes HTML content into structured sentences and tokens."""
 
-    def __init__(self, nlp: Language | None = None) -> None:
-        if nlp is None:
-            nlp = spacy.load("en_core_web_sm", exclude=["ner", "parser"])
-            nlp.enable_pipe("senter")
-        self._nlp = nlp
+    def __init__(
+        self, nlp: Language | None = None, model_name: str | None = None
+    ) -> None:
+        if nlp is not None:
+            self._nlp = nlp
+            return
+        from litscope.config import get_settings
+
+        name = model_name or get_settings().spacy_model
+        self._nlp = _load_spacy_model(name)
 
     def normalize(self, html_content: str) -> NormalizedChapter:
         """Normalize HTML content into sentences and tokens."""

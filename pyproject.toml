@@ -14,6 +14,7 @@ dependencies = [
     "click>=8.1",
     "duckdb>=1.2",
     "ebooklib>=0.18",
+    "fastapi>=0.115",
     "numpy>=1.26",
     "pydantic>=2.10",
     "pydantic-settings>=2.7",
@@ -21,13 +22,18 @@ dependencies = [
     "spacy>=3.8",
     "structlog>=24.4",
     "syllables>=1.1.5",
+    "uvicorn[standard]>=0.34",
 ]
+
+[project.optional-dependencies]
+hq = ["spacy-transformers>=1.3"]
 
 [project.scripts]
 litscope = "litscope.cli.commands:cli"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28",
     "mypy>=1.13",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
@@ -54,6 +60,10 @@ select = [
     "RUF",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"src/litscope/api/**" = ["B008"]
+"tests/**" = ["B008"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
@@ -70,12 +80,17 @@ module = ["litscope.ingestion.epub_parser"]
 disallow_untyped_calls = false
 
 [[tool.mypy.overrides]]
-module = ["syllables", "scipy.*"]
+module = ["syllables", "scipy.*", "spacy_transformers"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["uvicorn"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+markers = ["integration: integration tests (require full pipeline)"]
 
 [tool.coverage.run]
 source = ["litscope"]
