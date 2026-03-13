@@ -26,7 +26,7 @@ class VoiceRatioAnalyzer(BaseAnalyzer):
         if VoiceRatioAnalyzer._nlp is None:
             VoiceRatioAnalyzer._nlp = spacy.load(
                 self._settings.spacy_model,
-                disable=["ner"],
+                disable=["ner", "lemmatizer"],
             )
         return VoiceRatioAnalyzer._nlp
 
@@ -46,7 +46,7 @@ class VoiceRatioAnalyzer(BaseAnalyzer):
 
         passive_deps = {"nsubjpass", "auxpass"}
         passive_count = 0
-        for doc in nlp.pipe(sentences_text):
+        for doc in nlp.pipe(sentences_text, batch_size=512):
             if any(token.dep_ in passive_deps for token in doc):
                 passive_count += 1
 
