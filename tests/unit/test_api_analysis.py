@@ -92,9 +92,7 @@ class TestReadabilityEndpoint:
 
 
 class TestReadabilityWithoutSentenceLength:
-    def test_readability_without_sentence_length(
-        self, seeded_db: Database
-    ) -> None:
+    def test_readability_without_sentence_length(self, seeded_db: Database) -> None:
         """Readability without sentence_length returns None for those."""
         conn = seeded_db.conn
         conn.execute(

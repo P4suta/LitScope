@@ -72,9 +72,7 @@ def create_app(
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            o.strip() for o in settings.cors_origins.split(",")
-        ],
+        allow_origins=[o.strip() for o in settings.cors_origins.split(",")],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -100,9 +98,7 @@ def create_app(
         )
 
     @app.exception_handler(Exception)
-    async def generic_error_handler(
-        request: Request, exc: Exception
-    ) -> JSONResponse:
+    async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
         logger.error(
             "unhandled_exception",
             exc_type=type(exc).__name__,

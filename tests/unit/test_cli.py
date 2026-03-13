@@ -62,7 +62,6 @@ class TestIngestCommand:
         assert "Skipped: 1" in result.output
         assert "[SKIP]" in result.output
 
-
     def test_ingest_single_file(self, tmp_path: Path) -> None:
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
@@ -81,14 +80,17 @@ class TestIngestCommand:
         create_sample_epub(epub_dir)
         db_path = tmp_path / "test.duckdb"
 
-        with patch(
-            "litscope.ingestion.pipeline.IngestionPipeline.__init__",
-            return_value=None,
-        ) as mock_init, patch(
-            "litscope.ingestion.pipeline.IngestionPipeline.ingest_directory",
-            return_value=__import__(
-                "litscope.ingestion.pipeline", fromlist=["IngestionSummary"]
-            ).IngestionSummary(),
+        with (
+            patch(
+                "litscope.ingestion.pipeline.IngestionPipeline.__init__",
+                return_value=None,
+            ) as mock_init,
+            patch(
+                "litscope.ingestion.pipeline.IngestionPipeline.ingest_directory",
+                return_value=__import__(
+                    "litscope.ingestion.pipeline", fromlist=["IngestionSummary"]
+                ).IngestionSummary(),
+            ),
         ):
             result = CliRunner().invoke(
                 cli,
@@ -105,14 +107,17 @@ class TestIngestCommand:
         create_sample_epub(epub_dir)
         db_path = tmp_path / "test.duckdb"
 
-        with patch(
-            "litscope.ingestion.pipeline.IngestionPipeline.__init__",
-            return_value=None,
-        ) as mock_init, patch(
-            "litscope.ingestion.pipeline.IngestionPipeline.ingest_directory",
-            return_value=__import__(
-                "litscope.ingestion.pipeline", fromlist=["IngestionSummary"]
-            ).IngestionSummary(),
+        with (
+            patch(
+                "litscope.ingestion.pipeline.IngestionPipeline.__init__",
+                return_value=None,
+            ) as mock_init,
+            patch(
+                "litscope.ingestion.pipeline.IngestionPipeline.ingest_directory",
+                return_value=__import__(
+                    "litscope.ingestion.pipeline", fromlist=["IngestionSummary"]
+                ).IngestionSummary(),
+            ),
         ):
             result = CliRunner().invoke(
                 cli,
@@ -231,9 +236,7 @@ class TestServeCommand:
     @patch("uvicorn.run")
     def test_serve_default(self, mock_run, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
         db_path = tmp_path / "test.duckdb"
-        result = CliRunner().invoke(
-            cli, ["serve", "--db-path", str(db_path)]
-        )
+        result = CliRunner().invoke(cli, ["serve", "--db-path", str(db_path)])
         assert result.exit_code == 0
         mock_run.assert_called_once()
         call_kwargs = mock_run.call_args
@@ -245,8 +248,15 @@ class TestServeCommand:
         db_path = tmp_path / "test.duckdb"
         result = CliRunner().invoke(
             cli,
-            ["serve", "--host", "127.0.0.1", "--port", "9000",
-             "--db-path", str(db_path)],
+            [
+                "serve",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "9000",
+                "--db-path",
+                str(db_path),
+            ],
         )
         assert result.exit_code == 0
         call_kwargs = mock_run.call_args

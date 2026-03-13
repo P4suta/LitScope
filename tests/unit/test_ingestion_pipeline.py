@@ -164,9 +164,7 @@ class TestEmptyTokenSentence:
             sentences=[NormalizedSentence(text="...", tokens=[])]
         )
 
-        with patch.object(
-            TextNormalizer, "normalize", return_value=empty_chapter
-        ):
+        with patch.object(TextNormalizer, "normalize", return_value=empty_chapter):
             pipeline = IngestionPipeline(db=db)
             summary = pipeline.ingest_directory(tmp_path)
 
@@ -184,18 +182,14 @@ class TestEmptyTokenSentence:
 
 
 class TestIngestFile:
-    def test_ingest_file_success(
-        self, db: Database, epub_dir: Path
-    ) -> None:
+    def test_ingest_file_success(self, db: Database, epub_dir: Path) -> None:
         pipeline = IngestionPipeline(db=db)
         result = pipeline.ingest_file(epub_dir / "sample.epub")
         assert result.success is True
         assert result.chapters > 0
         assert result.tokens > 0
 
-    def test_ingest_file_error_isolation(
-        self, db: Database, tmp_path: Path
-    ) -> None:
+    def test_ingest_file_error_isolation(self, db: Database, tmp_path: Path) -> None:
         bad_file = tmp_path / "bad.epub"
         bad_file.write_bytes(b"not an epub")
         pipeline = IngestionPipeline(db=db)

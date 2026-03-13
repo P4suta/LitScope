@@ -15,9 +15,7 @@ def list_authors(
     page_size: int = Query(20, ge=1, le=100),
 ) -> dict[str, object]:
     """List distinct authors with work counts."""
-    total_row = db.conn.execute(
-        "SELECT COUNT(DISTINCT author) FROM works"
-    ).fetchone()
+    total_row = db.conn.execute("SELECT COUNT(DISTINCT author) FROM works").fetchone()
     total = total_row[0] if total_row else 0
 
     offset = (page - 1) * page_size
@@ -28,9 +26,7 @@ def list_authors(
     ).fetchall()
 
     return {
-        "items": [
-            {"author": r[0], "work_count": r[1]} for r in rows
-        ],
+        "items": [{"author": r[0], "work_count": r[1]} for r in rows],
         "total": total,
         "page": page,
         "page_size": page_size,

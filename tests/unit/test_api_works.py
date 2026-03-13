@@ -31,9 +31,7 @@ class TestListWorks:
         assert resp.status_code == 200
         assert resp.json()["total"] == 1
 
-    def test_list_works_filter_by_author_no_match(
-        self, api_client: TestClient
-    ) -> None:
+    def test_list_works_filter_by_author_no_match(self, api_client: TestClient) -> None:
         resp = api_client.get("/api/v1/works?author=Nobody")
         assert resp.status_code == 200
         assert resp.json()["total"] == 0

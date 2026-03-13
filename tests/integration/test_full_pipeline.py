@@ -54,9 +54,7 @@ def _ingest_and_analyze(
 
 
 class TestIngestThenQuery:
-    def test_ingest_then_query_works_api(
-        self, tmp_path: Path
-    ) -> None:
+    def test_ingest_then_query_works_api(self, tmp_path: Path) -> None:
         """POST /ingest → GET /works returns the ingested work."""
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
@@ -83,9 +81,7 @@ class TestIngestThenQuery:
 
 
 class TestIngestAnalyzeQuery:
-    def test_ingest_analyze_vocabulary_api(
-        self, tmp_path: Path
-    ) -> None:
+    def test_ingest_analyze_vocabulary_api(self, tmp_path: Path) -> None:
         """Full pipeline → GET /works/{id}/vocabulary returns results."""
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
@@ -96,13 +92,9 @@ class TestIngestAnalyzeQuery:
         db.connect()
         db.migrate()
 
-        _ingest_and_analyze(
-            db, epub_dir, ["vocabulary_frequency", "lexical_richness"]
-        )
+        _ingest_and_analyze(db, epub_dir, ["vocabulary_frequency", "lexical_richness"])
 
-        work_id = db.conn.execute(
-            "SELECT work_id FROM works LIMIT 1"
-        ).fetchone()[0]
+        work_id = db.conn.execute("SELECT work_id FROM works LIMIT 1").fetchone()[0]
 
         settings = LitScopeSettings(db_path=db_path)
         app = create_app(db=db, settings=settings)
@@ -114,9 +106,7 @@ class TestIngestAnalyzeQuery:
             assert data["unique_lemmas"] > 0
             assert len(data["top_words"]) > 0
 
-    def test_ingest_analyze_syntax_api(
-        self, tmp_path: Path
-    ) -> None:
+    def test_ingest_analyze_syntax_api(self, tmp_path: Path) -> None:
         """Full pipeline → GET /works/{id}/syntax returns results."""
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
@@ -139,9 +129,7 @@ class TestIngestAnalyzeQuery:
             ],
         )
 
-        work_id = db.conn.execute(
-            "SELECT work_id FROM works LIMIT 1"
-        ).fetchone()[0]
+        work_id = db.conn.execute("SELECT work_id FROM works LIMIT 1").fetchone()[0]
 
         settings = LitScopeSettings(db_path=db_path)
         app = create_app(db=db, settings=settings)
@@ -194,8 +182,7 @@ class TestIngestAnalyzeQuery:
         _ingest_and_analyze(db, epub_dir2, ["vocabulary_frequency"])
 
         work_ids = [
-            r[0]
-            for r in db.conn.execute("SELECT work_id FROM works").fetchall()
+            r[0] for r in db.conn.execute("SELECT work_id FROM works").fetchall()
         ]
         assert len(work_ids) >= 2
 
@@ -222,9 +209,7 @@ class TestErrorPaths:
         )
         assert resp.status_code == 400
 
-    def test_work_not_found_returns_404(
-        self, integration_client: TestClient
-    ) -> None:
+    def test_work_not_found_returns_404(self, integration_client: TestClient) -> None:
         """GET /works/{id} for non-existent work returns 404."""
         resp = integration_client.get("/api/v1/works/nonexistent-id")
         assert resp.status_code == 404

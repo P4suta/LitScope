@@ -31,9 +31,7 @@ class TestDependencies:
             assert resp.status_code == 200
             assert app.state.settings is settings
 
-    def test_get_settings_returns_settings(
-        self, seeded_db: Database
-    ) -> None:
+    def test_get_settings_returns_settings(self, seeded_db: Database) -> None:
         from litscope.api.dependencies import (
             get_settings as dep_get_settings,
         )
@@ -54,9 +52,7 @@ class TestDependencies:
 
 
 class TestCreateApp:
-    def test_creates_app_with_injected_db(
-        self, seeded_db: Database
-    ) -> None:
+    def test_creates_app_with_injected_db(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
         assert app.title == "LitScope"
 
@@ -133,9 +129,7 @@ class TestCreateApp:
             assert body["title"] == "Unprocessable Entity"
             assert body["detail"] == "ingestion failed"
 
-    def test_analyzer_not_found_returns_404(
-        self, seeded_db: Database
-    ) -> None:
+    def test_analyzer_not_found_returns_404(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
 
         @app.get("/test-analyzer-error")
@@ -161,9 +155,7 @@ class TestCreateApp:
             body = resp.json()
             assert body["title"] == "Internal Server Error"
 
-    def test_work_not_found_error_returns_404(
-        self, seeded_db: Database
-    ) -> None:
+    def test_work_not_found_error_returns_404(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
 
         @app.get("/test-work-not-found")
@@ -177,9 +169,7 @@ class TestCreateApp:
             assert body["title"] == "Not Found"
             assert body["detail"] == "missing-id"
 
-    def test_circular_dependency_error_returns_400(
-        self, seeded_db: Database
-    ) -> None:
+    def test_circular_dependency_error_returns_400(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
 
         @app.get("/test-circular")
@@ -192,9 +182,7 @@ class TestCreateApp:
             body = resp.json()
             assert body["title"] == "Bad Request"
 
-    def test_dependency_not_satisfied_returns_400(
-        self, seeded_db: Database
-    ) -> None:
+    def test_dependency_not_satisfied_returns_400(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
 
         @app.get("/test-dep-not-satisfied")
@@ -227,9 +215,7 @@ class TestCreateApp:
             assert body["detail"] == "An unexpected error occurred"
             mock_logger.error.assert_called_once()
 
-    def test_response_contains_x_request_id_header(
-        self, seeded_db: Database
-    ) -> None:
+    def test_response_contains_x_request_id_header(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
         with TestClient(app) as client:
             resp = client.get("/api/v1/health")
@@ -251,9 +237,7 @@ class TestCreateApp:
             resp = client.get("/api/v1/health")
             assert resp.status_code == 200
 
-    def test_app_state_has_db_and_settings(
-        self, seeded_db: Database
-    ) -> None:
+    def test_app_state_has_db_and_settings(self, seeded_db: Database) -> None:
         app = create_app(db=seeded_db)
         with TestClient(app) as client:
             assert app.state.db is seeded_db

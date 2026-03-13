@@ -167,9 +167,7 @@ class TestLoadSpacyModel:
         mock_nlp = MagicMock()
         with patch("spacy.load", return_value=mock_nlp) as mock_load:
             result = _load_spacy_model("en_core_web_md")
-        mock_load.assert_called_once_with(
-            "en_core_web_md", exclude=["ner", "parser"]
-        )
+        mock_load.assert_called_once_with("en_core_web_md", exclude=["ner", "parser"])
         mock_nlp.enable_pipe.assert_called_once_with("senter")
         assert result is mock_nlp
 

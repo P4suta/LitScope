@@ -35,9 +35,7 @@ class TestIngestEndpoint:
     ) -> None:
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
-        mock_pipeline_cls.return_value.ingest_directory.return_value = (
-            _make_summary()
-        )
+        mock_pipeline_cls.return_value.ingest_directory.return_value = _make_summary()
 
         app = create_app(db=tmp_db)
         with TestClient(app) as client:
@@ -69,8 +67,8 @@ class TestIngestEndpoint:
     ) -> None:
         epub_dir = tmp_path / "empty"
         epub_dir.mkdir()
-        mock_pipeline_cls.return_value.ingest_directory.return_value = (
-            IngestionSummary(results=[])
+        mock_pipeline_cls.return_value.ingest_directory.return_value = IngestionSummary(
+            results=[]
         )
 
         app = create_app(db=tmp_db)
@@ -88,17 +86,15 @@ class TestIngestEndpoint:
     ) -> None:
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
-        mock_pipeline_cls.return_value.ingest_directory.return_value = (
-            IngestionSummary(
-                results=[
-                    IngestionResult(
-                        work_id="sample",
-                        title="Sample",
-                        success=True,
-                        skipped=True,
-                    )
-                ]
-            )
+        mock_pipeline_cls.return_value.ingest_directory.return_value = IngestionSummary(
+            results=[
+                IngestionResult(
+                    work_id="sample",
+                    title="Sample",
+                    success=True,
+                    skipped=True,
+                )
+            ]
         )
 
         app = create_app(db=tmp_db)
@@ -116,17 +112,15 @@ class TestIngestEndpoint:
     ) -> None:
         epub_dir = tmp_path / "epubs"
         epub_dir.mkdir()
-        mock_pipeline_cls.return_value.ingest_directory.return_value = (
-            IngestionSummary(
-                results=[
-                    IngestionResult(
-                        work_id="bad",
-                        title="Bad",
-                        success=False,
-                        error="parse error",
-                    )
-                ]
-            )
+        mock_pipeline_cls.return_value.ingest_directory.return_value = IngestionSummary(
+            results=[
+                IngestionResult(
+                    work_id="bad",
+                    title="Bad",
+                    success=False,
+                    error="parse error",
+                )
+            ]
         )
 
         app = create_app(db=tmp_db)

@@ -43,9 +43,7 @@ class TestLitScopeSettings:
         assert settings.sentiment_segments == 50
         assert settings.time_slice_years == 10
 
-    def test_spacy_model_hq_env_override(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_spacy_model_hq_env_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("LITSCOPE_SPACY_MODEL_HQ", "en_core_web_lg")
         settings = LitScopeSettings()
         assert settings.spacy_model_hq == "en_core_web_lg"

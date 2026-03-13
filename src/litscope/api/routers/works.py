@@ -29,8 +29,7 @@ def _get_analysis_metrics(
 ) -> dict[str, float] | None:
     """Fetch metrics dict for a given analyzer/work, or None if not run."""
     row = db.conn.execute(
-        "SELECT metrics FROM analysis_results "
-        "WHERE analyzer_name = ? AND work_id = ?",
+        "SELECT metrics FROM analysis_results WHERE analyzer_name = ? AND work_id = ?",
         [analyzer_name, work_id],
     ).fetchone()
     if row is None:
@@ -63,8 +62,7 @@ def list_works(
         params.extend([f"%{search}%", f"%{search}%"])
 
     where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
-    total_row = db.conn.execute(
-        f"SELECT COUNT(*) FROM works{where}", params    ).fetchone()
+    total_row = db.conn.execute(f"SELECT COUNT(*) FROM works{where}", params).fetchone()
     total = total_row[0] if total_row else 0
 
     offset = (page - 1) * page_size
@@ -89,9 +87,7 @@ def list_works(
         )
         for r in rows
     ]
-    return PaginatedResponse(
-        items=items, total=total, page=page, page_size=page_size
-    )
+    return PaginatedResponse(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.get("/works/{work_id}")
@@ -174,16 +170,12 @@ def get_vocabulary(
         mtld=richness.get("mtld") if richness else None,
         zipf_alpha=zipf.get("alpha") if zipf else None,
         zipf_r_squared=zipf.get("r_squared") if zipf else None,
-        top_words=[
-            WordFrequencyItem(lemma=w[0], count=w[1], tf=w[2]) for w in words
-        ],
+        top_words=[WordFrequencyItem(lemma=w[0], count=w[1], tf=w[2]) for w in words],
     )
 
 
 @router.get("/works/{work_id}/syntax")
-def get_syntax(
-    work_id: str, db: Database = Depends(get_db)
-) -> SyntaxAnalysis:
+def get_syntax(work_id: str, db: Database = Depends(get_db)) -> SyntaxAnalysis:
     """Get syntax analysis for a work."""
     _assert_work_exists(db, work_id)
     pos_dist = _get_analysis_metrics(db, work_id, "pos_distribution")
@@ -216,25 +208,18 @@ def get_syntax(
     return SyntaxAnalysis(
         work_id=work_id,
         pos_distribution=[
-            POSDistributionItem(pos=r[0], count=r[1], ratio=r[2])
-            for r in pos_rows
+            POSDistributionItem(pos=r[0], count=r[1], ratio=r[2]) for r in pos_rows
         ],
         pos_transitions=[
-            POSTransitionItem(
-                from_pos=r[0], to_pos=r[1], count=r[2], ratio=r[3]
-            )
+            POSTransitionItem(from_pos=r[0], to_pos=r[1], count=r[2], ratio=r[3])
             for r in trans_rows
         ],
         sentence_openings=[
             SentenceOpeningItem(pattern=r[0], count=r[1], ratio=r[2])
             for r in opening_rows
         ],
-        active_voice_count=(
-            int(voice["active_count"]) if voice else None
-        ),
-        passive_voice_count=(
-            int(voice["passive_count"]) if voice else None
-        ),
+        active_voice_count=(int(voice["active_count"]) if voice else None),
+        passive_voice_count=(int(voice["passive_count"]) if voice else None),
         passive_ratio=voice.get("passive_ratio") if voice else None,
     )
 
@@ -259,15 +244,9 @@ def get_readability(
         flesch_kincaid_grade=readability.get("flesch_kincaid_grade"),
         coleman_liau_index=readability.get("coleman_liau_index"),
         ari=readability.get("ari"),
-        mean_sentence_length=(
-            sent_len.get("mean") if sent_len else None
-        ),
-        median_sentence_length=(
-            sent_len.get("median") if sent_len else None
-        ),
-        stdev_sentence_length=(
-            sent_len.get("stdev") if sent_len else None
-        ),
+        mean_sentence_length=(sent_len.get("mean") if sent_len else None),
+        median_sentence_length=(sent_len.get("median") if sent_len else None),
+        stdev_sentence_length=(sent_len.get("stdev") if sent_len else None),
         min_sentence_length=(
             int(sent_len["min"]) if sent_len and "min" in sent_len else None
         ),
@@ -312,8 +291,6 @@ for _name in _FUTURE_ANALYSES:
 
 def _assert_work_exists(db: Database, work_id: str) -> None:
     """Raise WorkNotFoundError if work does not exist."""
-    row = db.conn.execute(
-        "SELECT 1 FROM works WHERE work_id = ?", [work_id]
-    ).fetchone()
+    row = db.conn.execute("SELECT 1 FROM works WHERE work_id = ?", [work_id]).fetchone()
     if row is None:
         raise WorkNotFoundError(work_id)

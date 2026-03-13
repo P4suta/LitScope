@@ -22,9 +22,7 @@ def cli() -> None:
 @click.option(
     "--hq", is_flag=True, default=False, help="Use high-quality transformer model."
 )
-def ingest(
-    epub_path: Path, db_path: Path | None, model: str | None, hq: bool
-) -> None:
+def ingest(epub_path: Path, db_path: Path | None, model: str | None, hq: bool) -> None:
     """Ingest EPUB files from a directory or a single file."""
     from litscope.ingestion.pipeline import IngestionPipeline, IngestionSummary
 

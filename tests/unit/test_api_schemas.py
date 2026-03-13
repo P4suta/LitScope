@@ -223,7 +223,5 @@ class TestIngestSchemas:
         assert r.success is True
 
     def test_ingest_response(self) -> None:
-        r = IngestResponse(
-            total=1, ingested=1, skipped=0, failed=0, results=[]
-        )
+        r = IngestResponse(total=1, ingested=1, skipped=0, failed=0, results=[])
         assert r.total == 1

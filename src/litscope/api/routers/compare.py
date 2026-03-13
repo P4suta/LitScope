@@ -46,9 +46,7 @@ def compare_works(
                 metrics[f"{analyzer_name}.{k}"] = v
 
         results.append(
-            ComparisonItem(
-                work_id=wid, title=row[0], author=row[1], metrics=metrics
-            )
+            ComparisonItem(work_id=wid, title=row[0], author=row[1], metrics=metrics)
         )
 
     return results

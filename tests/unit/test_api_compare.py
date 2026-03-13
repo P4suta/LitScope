@@ -34,9 +34,7 @@ class TestCompareEndpoint:
             assert resp.status_code == 200
             assert resp.json()[0]["metrics"] == {}
 
-    def test_compare_multiple_works(
-        self, seeded_db_with_analysis: Database
-    ) -> None:
+    def test_compare_multiple_works(self, seeded_db_with_analysis: Database) -> None:
         """Add a second work and compare two."""
         conn = seeded_db_with_analysis.conn
         conn.execute(
@@ -47,8 +45,6 @@ class TestCompareEndpoint:
         )
         app = create_app(db=seeded_db_with_analysis)
         with TestClient(app) as client:
-            resp = client.get(
-                "/api/v1/compare?work_id=test-work&work_id=work-2"
-            )
+            resp = client.get("/api/v1/compare?work_id=test-work&work_id=work-2")
             assert resp.status_code == 200
             assert len(resp.json()) == 2
