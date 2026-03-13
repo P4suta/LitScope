@@ -195,3 +195,139 @@ def seeded_db(tmp_db: Database) -> Database:
 def work_data(seeded_db: Database) -> WorkData:
     """WorkData instance for the seeded test work."""
     return WorkData(work_id="test-work", _db=seeded_db)
+
+
+@pytest.fixture
+def seeded_db_with_analysis(seeded_db: Database) -> Database:
+    """DB with sample work plus analysis results for API testing."""
+    conn = seeded_db.conn
+    # vocabulary_frequency
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "vocabulary_frequency",
+            "test-work",
+            '{"total_tokens": 20, "total_types": 12}',
+            "{}",
+        ],
+    )
+    # lexical_richness
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "lexical_richness",
+            "test-work",
+            '{"ttr": 0.6, "hapax_ratio": 0.4, "yules_k": 120.0, "mtld": 45.0}',
+            "{}",
+        ],
+    )
+    # zipf_fitness
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "zipf_fitness",
+            "test-work",
+            '{"alpha": 1.5, "r_squared": 0.95, "intercept": 2.0}',
+            "{}",
+        ],
+    )
+    # readability
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "readability",
+            "test-work",
+            '{"flesch_kincaid_grade": 5.2, "coleman_liau_index": 7.1, "ari": 4.8}',
+            "{}",
+        ],
+    )
+    # sentence_length
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "sentence_length",
+            "test-work",
+            '{"mean": 5.67, "median": 6.0, "stdev": 0.58, "min": 5.0, "max": 6.0}',
+            "{}",
+        ],
+    )
+    # pos_distribution
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "pos_distribution",
+            "test-work",
+            '{"total_tokens": 20}',
+            "{}",
+        ],
+    )
+    # voice_ratio
+    conn.execute(
+        "INSERT INTO analysis_results (id, analyzer_name, work_id, metrics, data) "
+        "VALUES (nextval('seq_analysis_results'), ?, ?, ?, ?)",
+        [
+            "voice_ratio",
+            "test-work",
+            '{"active_count": 3, "passive_count": 0, "passive_ratio": 0.0}',
+            "{}",
+        ],
+    )
+    # word_frequencies
+    conn.executemany(
+        "INSERT INTO word_frequencies (work_id, lemma, count, tf) VALUES (?, ?, ?, ?)",
+        [
+            ("test-work", "the", 5, 0.25),
+            ("test-work", "cat", 2, 0.10),
+            ("test-work", "sit", 1, 0.05),
+        ],
+    )
+    # pos_distributions
+    conn.executemany(
+        "INSERT INTO pos_distributions (work_id, pos, count, ratio) "
+        "VALUES (?, ?, ?, ?)",
+        [
+            ("test-work", "NOUN", 6, 0.30),
+            ("test-work", "DET", 5, 0.25),
+            ("test-work", "VERB", 3, 0.15),
+            ("test-work", "PUNCT", 3, 0.15),
+            ("test-work", "ADP", 2, 0.10),
+            ("test-work", "ADV", 1, 0.05),
+        ],
+    )
+    # pos_transitions
+    conn.executemany(
+        "INSERT INTO pos_transitions (work_id, from_pos, to_pos, count, ratio) "
+        "VALUES (?, ?, ?, ?, ?)",
+        [
+            ("test-work", "DET", "NOUN", 5, 0.33),
+            ("test-work", "NOUN", "VERB", 2, 0.13),
+        ],
+    )
+    # sentence_opening_patterns
+    conn.executemany(
+        "INSERT INTO sentence_opening_patterns (work_id, pattern, count, ratio) "
+        "VALUES (?, ?, ?, ?)",
+        [
+            ("test-work", "DET", 2, 0.67),
+            ("test-work", "NOUN", 1, 0.33),
+        ],
+    )
+    return seeded_db
+
+
+@pytest.fixture
+def api_client(seeded_db_with_analysis: Database):
+    """FastAPI TestClient with seeded analysis data."""
+    from fastapi.testclient import TestClient
+
+    from litscope.api.app import create_app
+
+    app = create_app(db=seeded_db_with_analysis)
+    with TestClient(app) as client:
+        yield client
