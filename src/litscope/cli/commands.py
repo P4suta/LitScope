@@ -109,7 +109,22 @@ def serve(host: str | None, port: int | None, db_path: Path | None) -> None:
     "--analyzers", default=None, help="Comma-separated list of analyzer names."
 )
 @click.option("--db-path", type=click.Path(path_type=Path), default=None)
-def analyze(work: str | None, analyzers: str | None, db_path: Path | None) -> None:
+@click.option(
+    "--force", is_flag=True, default=False, help="Re-run even if results exist."
+)
+@click.option(
+    "--parallel",
+    is_flag=True,
+    default=False,
+    help="Run independent analyzers in parallel.",
+)
+def analyze(
+    work: str | None,
+    analyzers: str | None,
+    db_path: Path | None,
+    force: bool,
+    parallel: bool,
+) -> None:
     """Run analysis pipeline on ingested works."""
     from litscope.analysis.orchestrator import PipelineOrchestrator
     from litscope.analysis.registry import AnalyzerRegistry
@@ -126,12 +141,14 @@ def analyze(work: str | None, analyzers: str | None, db_path: Path | None) -> No
         orchestrator = PipelineOrchestrator(db, settings)
 
         if work:
-            results = orchestrator.run(work, names)
+            results = orchestrator.run(work, names, force=force, parallel=parallel)
             click.echo(f"Completed: {len(results)} analyzers for {work}")
             for r in results:
                 click.echo(f"  [OK] {r.analyzer_name}")
         else:
-            all_results = orchestrator.run_all_works(names)
+            all_results = orchestrator.run_all_works(
+                names, force=force, parallel=parallel
+            )
             total_works = len(all_results)
             total_analyzers = sum(len(v) for v in all_results.values())
             click.echo(
