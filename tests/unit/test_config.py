@@ -1,7 +1,8 @@
 """Tests for configuration management."""
 
 from pathlib import Path
-from unittest.mock import patch
+
+import pytest
 
 from litscope.config import LitScopeSettings, get_settings
 
@@ -19,14 +20,14 @@ class TestLitScopeSettings:
         assert isinstance(settings.db_path, Path)
         assert isinstance(settings.epub_dir, Path)
 
-    def test_env_override(self, monkeypatch: "pytest.MonkeyPatch") -> None:
+    def test_env_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("LITSCOPE_DB_PATH", "/tmp/test.duckdb")
         monkeypatch.setenv("LITSCOPE_LOG_LEVEL", "DEBUG")
         settings = LitScopeSettings()
         assert settings.db_path == Path("/tmp/test.duckdb")
         assert settings.log_level == "DEBUG"
 
-    def test_env_prefix(self, monkeypatch: "pytest.MonkeyPatch") -> None:
+    def test_env_prefix(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("LITSCOPE_EPUB_DIR", "/data/books")
         settings = LitScopeSettings()
         assert settings.epub_dir == Path("/data/books")

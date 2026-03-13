@@ -2,6 +2,7 @@
 
 import pytest
 
+from litscope.exceptions import DatabaseError
 from litscope.storage.database import Database
 
 
@@ -25,6 +26,11 @@ class TestDatabaseConnection:
     def test_close_when_not_connected(self) -> None:
         db = Database(":memory:")
         db.close()  # Should not raise
+
+    def test_connect_invalid_path_raises_database_error(self) -> None:
+        db = Database("/nonexistent/dir/test.duckdb")
+        with pytest.raises(DatabaseError, match="Failed to connect"):
+            db.connect()
 
 
 class TestMigration:

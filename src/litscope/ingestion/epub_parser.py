@@ -63,8 +63,6 @@ class EpubParser:
                 raw_metadata=raw_metadata,
                 chapters=chapters,
             )
-        except EpubParseError:
-            raise
         except Exception as e:
             raise EpubParseError(f"Failed to parse {epub_path}: {e}") from e
 

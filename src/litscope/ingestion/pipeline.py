@@ -1,4 +1,4 @@
-"""Differential ingestion pipeline orchestrating parsing, extraction, and normalization."""
+"""Differential ingestion pipeline orchestrating parsing and normalization."""
 
 from dataclasses import dataclass, field
 from pathlib import Path

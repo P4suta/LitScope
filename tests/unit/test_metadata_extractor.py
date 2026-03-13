@@ -65,7 +65,10 @@ class TestMetadataExtractor:
 
 class TestDeriveWorkId:
     def test_from_path(self) -> None:
-        assert MetadataExtractor.derive_work_id(Path("/data/jane-austen_pride-and-prejudice.epub")) == "jane-austen_pride-and-prejudice"
+        path = Path("/data/jane-austen_pride-and-prejudice.epub")
+        assert MetadataExtractor.derive_work_id(path) == (
+            "jane-austen_pride-and-prejudice"
+        )
 
     def test_from_string(self) -> None:
         assert MetadataExtractor.derive_work_id("books/moby-dick.epub") == "moby-dick"
