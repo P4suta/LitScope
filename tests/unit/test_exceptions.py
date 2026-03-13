@@ -3,7 +3,11 @@
 import pytest
 
 from litscope.exceptions import (
+    AnalysisError,
+    AnalyzerNotFoundError,
+    CircularDependencyError,
     DatabaseError,
+    DependencyNotSatisfiedError,
     EpubParseError,
     IngestionError,
     LitScopeError,
@@ -31,6 +35,31 @@ class TestExceptionHierarchy:
         err = EpubParseError("corrupt file")
         assert str(err) == "corrupt file"
 
+    def test_analysis_error_is_litscope_error(self) -> None:
+        with pytest.raises(LitScopeError):
+            raise AnalysisError("analysis failed")
+
+    def test_analyzer_not_found_is_analysis_error(self) -> None:
+        with pytest.raises(AnalysisError):
+            raise AnalyzerNotFoundError("not found")
+
+    def test_circular_dependency_is_analysis_error(self) -> None:
+        with pytest.raises(AnalysisError):
+            raise CircularDependencyError("cycle detected")
+
+    def test_dependency_not_satisfied_is_analysis_error(self) -> None:
+        with pytest.raises(AnalysisError):
+            raise DependencyNotSatisfiedError("missing dep")
+
     def test_all_are_exceptions(self) -> None:
-        for exc_class in (LitScopeError, EpubParseError, IngestionError, DatabaseError):
+        for exc_class in (
+            LitScopeError,
+            EpubParseError,
+            IngestionError,
+            DatabaseError,
+            AnalysisError,
+            AnalyzerNotFoundError,
+            CircularDependencyError,
+            DependencyNotSatisfiedError,
+        ):
             assert issubclass(exc_class, Exception)
