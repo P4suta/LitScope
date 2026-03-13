@@ -91,22 +91,14 @@ class PipelineBenchmark:
         tracemalloc.stop()
 
         # Flatten timings
-        flat_timings = [
-            t for ts in all_timings.values() for t in ts
-        ]
+        flat_timings = [t for ts in all_timings.values() for t in ts]
 
         # Per-work summaries
         work_summaries = []
         for wid in work_ids:
-            wt = sum(
-                t.total_seconds for t in all_timings.get(wid, [])
-            )
+            wt = sum(t.total_seconds for t in all_timings.get(wid, []))
             tc = token_counts.get(wid, 0)
-            work_summaries.append(
-                WorkSummary(
-                    wid, wt, tc, tc / wt if wt else 0.0
-                )
-            )
+            work_summaries.append(WorkSummary(wid, wt, tc, tc / wt if wt else 0.0))
 
         # Per-analyzer summaries
         analyzer_names_seen: list[str] = []
@@ -125,14 +117,8 @@ class PipelineBenchmark:
             avg_a = sum(t.analyze_seconds for t in ts) / n
             avg_s = sum(t.store_seconds for t in ts) / n
             avg_t = sum(t.total_seconds for t in ts) / n
-            pct = (
-                (avg_t * n / pipeline_total * 100)
-                if pipeline_total
-                else 0.0
-            )
-            analyzer_summaries.append(
-                AnalyzerSummary(name, avg_a, avg_s, avg_t, pct)
-            )
+            pct = (avg_t * n / pipeline_total * 100) if pipeline_total else 0.0
+            analyzer_summaries.append(AnalyzerSummary(name, avg_a, avg_s, avg_t, pct))
 
         return BenchmarkResult(
             work_count=len(work_ids),
@@ -151,9 +137,7 @@ def format_table(result: BenchmarkResult) -> str:
     wc = result.work_count
     ac = result.analyzer_count
     ts = result.total_seconds
-    header = (
-        f"Works: {wc} | Analyzers: {ac} | Total: {ts:.1f}s"
-    )
+    header = f"Works: {wc} | Analyzers: {ac} | Total: {ts:.1f}s"
     col = (
         f"  {'Analyzer':<30} {'Analyze(s)':>10}"
         f" {'Store(s)':>10} {'Total(s)':>10} {'%':>6}"
@@ -176,10 +160,7 @@ def format_table(result: BenchmarkResult) -> str:
         )
     lines.append("")
     lines.append("Per-Work Summary:")
-    wcol = (
-        f"  {'Work':<40} {'Total(s)':>10}"
-        f" {'Tokens':>10} {'Tokens/s':>10}"
-    )
+    wcol = f"  {'Work':<40} {'Total(s)':>10} {'Tokens':>10} {'Tokens/s':>10}"
     lines.append(wcol)
     for w in result.work_summaries:
         lines.append(
@@ -206,13 +187,15 @@ def format_csv(result: BenchmarkResult) -> str:
     ]
     writer.writerow(cols)
     for t in result.timings:
-        writer.writerow([
-            t.analyzer_name,
-            t.work_id,
-            t.analyze_seconds,
-            t.store_seconds,
-            t.total_seconds,
-        ])
+        writer.writerow(
+            [
+                t.analyzer_name,
+                t.work_id,
+                t.analyze_seconds,
+                t.store_seconds,
+                t.total_seconds,
+            ]
+        )
     return buf.getvalue()
 
 
@@ -224,12 +207,8 @@ def format_json(result: BenchmarkResult) -> str:
         "total_seconds": result.total_seconds,
         "peak_memory_mb": result.peak_memory_mb,
         "data_load_seconds": result.data_load_seconds,
-        "analyzer_summaries": [
-            asdict(s) for s in result.analyzer_summaries
-        ],
-        "work_summaries": [
-            asdict(w) for w in result.work_summaries
-        ],
+        "analyzer_summaries": [asdict(s) for s in result.analyzer_summaries],
+        "work_summaries": [asdict(w) for w in result.work_summaries],
         "timings": [asdict(t) for t in result.timings],
     }
     return json.dumps(data, indent=2)

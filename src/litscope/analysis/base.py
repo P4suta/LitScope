@@ -40,8 +40,7 @@ class BaseAnalyzer(ABC):
     def is_analyzed(self, work_id: str) -> bool:
         """Check if results already exist for this analyzer + work_id."""
         row = self._db.conn.execute(
-            "SELECT 1 FROM analysis_results "
-            "WHERE analyzer_name = ? AND work_id = ?",
+            "SELECT 1 FROM analysis_results WHERE analyzer_name = ? AND work_id = ?",
             [self.name, work_id],
         ).fetchone()
         return row is not None

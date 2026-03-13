@@ -437,8 +437,7 @@ class TestFormatters:
         output = format_csv(sample_result)
         lines = [line.strip() for line in output.strip().splitlines()]
         expected_header = (
-            "analyzer_name,work_id,analyze_seconds,"
-            "store_seconds,total_seconds"
+            "analyzer_name,work_id,analyze_seconds,store_seconds,total_seconds"
         )
         assert lines[0] == expected_header
         assert len(lines) == 3  # header + 2 data rows

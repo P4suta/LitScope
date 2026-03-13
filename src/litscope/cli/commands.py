@@ -153,9 +153,14 @@ def benchmark(
         orchestrator = PipelineOrchestrator(db, settings)
         bm = PipelineBenchmark(orchestrator)
 
-        work_ids = list(work) if work else [
-            row[0] for row in db.conn.execute("SELECT work_id FROM works").fetchall()
-        ]
+        work_ids = (
+            list(work)
+            if work
+            else [
+                row[0]
+                for row in db.conn.execute("SELECT work_id FROM works").fetchall()
+            ]
+        )
 
         if not work_ids:
             click.echo("No works found. Run 'litscope ingest' first.")

@@ -40,10 +40,7 @@ def _build_layers(order: list[str]) -> list[list[str]]:
         layer = [
             name
             for name in remaining
-            if all(
-                dep in completed
-                for dep in AnalyzerRegistry.get(name).dependencies
-            )
+            if all(dep in completed for dep in AnalyzerRegistry.get(name).dependencies)
         ]
         layers.append(layer)
         completed.update(layer)
@@ -184,9 +181,7 @@ class PipelineOrchestrator:
             tuple[str, AnalysisResult | None, float, Exception | None]
         ] = []
         with ThreadPoolExecutor(max_workers=len(to_run)) as executor:
-            futures = {
-                executor.submit(_analyze_one, name): name for name in to_run
-            }
+            futures = {executor.submit(_analyze_one, name): name for name in to_run}
             for future in as_completed(futures):
                 futures_results.append(future.result())
 
@@ -290,9 +285,7 @@ class PipelineOrchestrator:
                 total_s=round(total_s, 4),
             )
         except Exception:
-            logger.exception(
-                "analyzer_failed", analyzer=analyzer_name, work_id=work_id
-            )
+            logger.exception("analyzer_failed", analyzer=analyzer_name, work_id=work_id)
             failed.add(analyzer_name)
 
     def run_all_works(
