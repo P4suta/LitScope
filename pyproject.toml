@@ -14,8 +14,10 @@ dependencies = [
     "click>=8.1",
     "duckdb>=1.2",
     "ebooklib>=0.18",
+    "numpy>=1.26",
     "pydantic>=2.10",
     "pydantic-settings>=2.7",
+    "scipy>=1.14",
     "spacy>=3.8",
     "structlog>=24.4",
     "syllables>=1.1.5",
@@ -68,7 +70,7 @@ module = ["litscope.ingestion.epub_parser"]
 disallow_untyped_calls = false
 
 [[tool.mypy.overrides]]
-module = ["syllables"]
+module = ["syllables", "scipy.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
