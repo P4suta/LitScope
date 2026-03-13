@@ -34,8 +34,10 @@ export function RadarChart({
       return { min, max: max === min ? max + 1 : max };
     });
 
-    const normalize = (value: number | null, i: number) =>
-      value != null ? (value - ranges[i].min) / (ranges[i].max - ranges[i].min) : 0;
+    const normalize = (value: number | null, i: number) => {
+      const range = ranges[i];
+      return value != null && range ? (value - range.min) / (range.max - range.min) : 0;
+    };
 
     const svg = d3
       .select(container)
@@ -75,7 +77,7 @@ export function RadarChart({
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "central")
         .attr("font-size", "10px")
-        .text(metrics[i].split(".").at(-1)!);
+        .text(metrics[i]?.split(".").at(-1) ?? "");
     }
 
     // Polygons
@@ -86,15 +88,16 @@ export function RadarChart({
       .curve(d3.curveLinearClosed);
 
     for (let idx = 0; idx < items.length; idx++) {
-      const item = items[idx];
-      const values = metrics.map((m, i) => normalize(item.values[m], i));
+      const item = items[idx]!;
+      const color = COLORS[idx % COLORS.length]!;
+      const values = metrics.map((m, i) => normalize(item.values[m] ?? null, i));
       svg
         .append("path")
         .datum(values)
         .attr("d", lineRadial)
-        .attr("fill", COLORS[idx % COLORS.length])
+        .attr("fill", color)
         .attr("fill-opacity", 0.15)
-        .attr("stroke", COLORS[idx % COLORS.length])
+        .attr("stroke", color)
         .attr("stroke-width", 2)
         .attr("class", "radar-polygon");
     }
@@ -108,8 +111,12 @@ export function RadarChart({
       g.append("rect")
         .attr("width", 12)
         .attr("height", 12)
-        .attr("fill", COLORS[idx % COLORS.length]);
-      g.append("text").attr("x", 16).attr("y", 10).attr("font-size", "11px").text(items[idx].label);
+        .attr("fill", COLORS[idx % COLORS.length]!);
+      g.append("text")
+        .attr("x", 16)
+        .attr("y", 10)
+        .attr("font-size", "11px")
+        .text(items[idx]!.label);
     }
 
     return () => {

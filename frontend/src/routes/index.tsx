@@ -13,7 +13,7 @@ function Dashboard() {
   const { data: status } = useStatus();
   const { data: works } = useWorks();
 
-  const items = works?.items as Array<{ author: string; genre: string }> | undefined;
+  const items = (works as { items?: Array<{ author: string; genre: string }> } | undefined)?.items;
   const authorCount = items ? new Set(items.map((w) => w.author)).size : undefined;
   const genreCount = items ? new Set(items.map((w) => w.genre)).size : undefined;
 

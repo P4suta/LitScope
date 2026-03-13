@@ -37,7 +37,7 @@ function Compare() {
   const [selected, setSelected] = useState<string[]>([]);
   const { data: comparison, isLoading: compareLoading, error: compareError } = useCompare(selected);
 
-  const works = (worksData?.items ?? []) as Work[];
+  const works = ((worksData as { items?: Work[] } | undefined)?.items ?? []) as Work[];
 
   const toggle = (id: string) => {
     setSelected((prev) =>
@@ -53,7 +53,7 @@ function Compare() {
   return (
     <div>
       <h1 className="text-3xl font-bold">Compare</h1>
-      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.compare.description}</p>
+      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.compare?.description}</p>
 
       {worksLoading && <p className="mt-8 text-text-muted">Loading works…</p>}
 

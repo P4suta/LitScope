@@ -17,7 +17,7 @@ interface Work {
 
 function WorkList() {
   const { data, isLoading, error } = useWorks();
-  const items = (data?.items ?? []) as Work[];
+  const items = ((data as { items?: Work[] } | undefined)?.items ?? []) as Work[];
 
   return (
     <div>

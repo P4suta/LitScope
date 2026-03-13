@@ -14,7 +14,7 @@ function Timeline() {
   return (
     <div>
       <h1 className="text-3xl font-bold">Timeline</h1>
-      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.timeline.description}</p>
+      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.timeline?.description}</p>
 
       {isLoading && <p className="mt-8 text-text-muted">Loading…</p>}
       {error && <p className="mt-8 text-red-500">Failed to load timeline.</p>}

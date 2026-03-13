@@ -13,7 +13,16 @@ export const Route = createFileRoute("/works/$workId")({
 
 function WorkDetail() {
   const { workId } = Route.useParams();
-  const { data: work } = useWork(workId);
+  interface WorkData {
+    title: string;
+    author: string;
+    genre: string;
+    chap_count: number;
+    sent_count?: number;
+    word_count?: number;
+    analyses_run?: string[];
+  }
+  const { data: work } = useWork(workId) as { data: WorkData | undefined };
   const { data: vocab } = useVocabulary(workId);
   const { data: read } = useReadability(workId);
   const { data: syntax } = useSyntax(workId);

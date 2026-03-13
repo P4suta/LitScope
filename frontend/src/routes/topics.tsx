@@ -12,7 +12,7 @@ function Topics() {
   return (
     <div>
       <h1 className="text-3xl font-bold">Topics</h1>
-      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.topics.description}</p>
+      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.topics?.description}</p>
 
       {isLoading && <p className="mt-8 text-text-muted">Loading…</p>}
       {error && <p className="mt-8 text-red-500">Failed to load topics.</p>}

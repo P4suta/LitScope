@@ -11,7 +11,7 @@ vi.mock("@observablehq/plot", () => ({
   text: vi.fn(() => ({})),
 }));
 
-const points = [
+const points: Array<{ pub_year: number; title: string; ttr: number | null }> = [
   { pub_year: 1920, title: "Book A", ttr: 0.5 },
   { pub_year: 1930, title: "Book B", ttr: 0.6 },
 ];

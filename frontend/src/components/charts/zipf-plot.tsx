@@ -30,7 +30,7 @@ export function ZipfPlot({ words, alpha, rSquared, intercept }: ZipfPlotProps) {
     ];
 
     if (alpha != null && ranked.length > 0) {
-      const yIntercept = intercept ?? ranked[0].logCount;
+      const yIntercept = intercept ?? ranked[0]!.logCount;
       const line = ranked.map((d) => ({
         logRank: d.logRank,
         predicted: yIntercept + alpha * d.logRank,

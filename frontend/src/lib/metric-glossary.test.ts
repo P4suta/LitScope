@@ -13,8 +13,9 @@ describe("SECTION_GLOSSARY", () => {
   ];
 
   it.each(expectedSections)("contains section key '%s'", (key) => {
-    expect(SECTION_GLOSSARY[key]).toBeDefined();
-    expect(SECTION_GLOSSARY[key].description.length).toBeGreaterThan(0);
+    const section = SECTION_GLOSSARY[key];
+    expect(section).toBeDefined();
+    expect(section!.description.length).toBeGreaterThan(0);
   });
 });
 
@@ -40,8 +41,9 @@ describe("METRIC_GLOSSARY", () => {
   ];
 
   it.each(expectedMetrics)("contains metric key '%s'", (key) => {
-    expect(METRIC_GLOSSARY[key]).toBeDefined();
-    expect(METRIC_GLOSSARY[key].short.length).toBeGreaterThan(0);
+    const metric = METRIC_GLOSSARY[key];
+    expect(metric).toBeDefined();
+    expect(metric!.short.length).toBeGreaterThan(0);
   });
 
   it("every entry has a non-empty short description", () => {

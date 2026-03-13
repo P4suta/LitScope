@@ -55,7 +55,7 @@ describe("ZipfPlot", () => {
     const lineData = lineCall![0] as Array<{ logRank: number; predicted: number }>;
     // With negative alpha, predicted values should decrease as logRank increases
     for (let i = 1; i < lineData.length; i++) {
-      expect(lineData[i].predicted).toBeLessThan(lineData[i - 1].predicted);
+      expect(lineData[i]!.predicted).toBeLessThan(lineData[i - 1]!.predicted);
     }
   });
 

@@ -100,12 +100,12 @@ describe("Compare route", () => {
     await renderCompare();
 
     const checkboxes = screen.getAllByRole("checkbox");
-    await userEvent.click(checkboxes[0]);
-    expect(checkboxes[0]).toBeChecked();
+    await userEvent.click(checkboxes[0]!);
+    expect(checkboxes[0]!).toBeChecked();
 
     // Uncheck
-    await userEvent.click(checkboxes[0]);
-    expect(checkboxes[0]).not.toBeChecked();
+    await userEvent.click(checkboxes[0]!);
+    expect(checkboxes[0]!).not.toBeChecked();
   });
 
   it("renders comparison table and radar chart when data is available", async () => {
@@ -169,13 +169,13 @@ describe("Compare route", () => {
     const checkboxes = screen.getAllByRole("checkbox");
     // Select 5
     for (let i = 0; i < 5; i++) {
-      await userEvent.click(checkboxes[i]);
+      await userEvent.click(checkboxes[i]!);
     }
-    expect(checkboxes[4]).toBeChecked();
+    expect(checkboxes[4]!).toBeChecked();
 
     // Try to select 6th — should be ignored
-    await userEvent.click(checkboxes[5]);
-    expect(checkboxes[5]).not.toBeChecked();
+    await userEvent.click(checkboxes[5]!);
+    expect(checkboxes[5]!).not.toBeChecked();
   });
 
   it("renders table with empty metrics", async () => {
