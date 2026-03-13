@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { RadarChart } from "@/components/charts/radar-chart";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useCompare } from "@/hooks/use-compare";
 import { useWorks } from "@/hooks/use-works";
+import { METRIC_GLOSSARY, SECTION_GLOSSARY } from "@/lib/metric-glossary";
 
 export const Route = createFileRoute("/compare")({
   component: Compare,
@@ -21,6 +23,14 @@ const RADAR_METRICS = [
   "voice_ratio.passive_ratio",
   "zipf_fitness.alpha",
 ];
+
+function metricTooltip(metricKey: string) {
+  const shortKey = metricKey.includes(".") ? metricKey.split(".").pop()! : metricKey;
+  const explanation = METRIC_GLOSSARY[shortKey];
+  return explanation ? (
+    <InfoTooltip label={explanation.short} interpret={explanation.interpret} />
+  ) : null;
+}
 
 function Compare() {
   const { data: worksData, isLoading: worksLoading } = useWorks();
@@ -43,7 +53,7 @@ function Compare() {
   return (
     <div>
       <h1 className="text-3xl font-bold">Compare</h1>
-      <p className="mt-2 text-text-muted">Select up to 5 works for side-by-side comparison.</p>
+      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.compare.description}</p>
 
       {worksLoading && <p className="mt-8 text-text-muted">Loading works…</p>}
 
@@ -95,7 +105,10 @@ function Compare() {
           <tbody>
             {Object.keys(comparison[0]?.metrics ?? {}).map((metric) => (
               <tr key={metric}>
-                <td className="border-b border-border py-2 font-medium">{metric}</td>
+                <td className="border-b border-border py-2 font-medium">
+                  {metric}
+                  {metricTooltip(metric)}
+                </td>
                 {comparison.map((c) => (
                   <td key={c.work_id} className="border-b border-border py-2">
                     {c.metrics[metric] != null ? c.metrics[metric] : "—"}

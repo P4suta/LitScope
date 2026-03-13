@@ -63,6 +63,7 @@ describe("Dashboard route", () => {
     expect(screen.getByText("Authors")).toBeInTheDocument();
     expect(screen.getByText("Genres")).toBeInTheDocument();
     expect(screen.getByTestId("genre-chart")).toBeInTheDocument();
+    expect(screen.getByText(/distribution of genres/i)).toBeInTheDocument();
   });
 
   it("renders dashes when data is undefined", async () => {

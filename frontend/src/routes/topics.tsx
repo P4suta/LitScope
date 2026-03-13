@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTopics } from "@/hooks/use-topics";
+import { SECTION_GLOSSARY } from "@/lib/metric-glossary";
 
 export const Route = createFileRoute("/topics")({
   component: Topics,
@@ -11,7 +12,7 @@ function Topics() {
   return (
     <div>
       <h1 className="text-3xl font-bold">Topics</h1>
-      <p className="mt-2 text-text-muted">Explore topic clusters and their associated works.</p>
+      <p className="mt-2 text-text-muted">{SECTION_GLOSSARY.topics.description}</p>
 
       {isLoading && <p className="mt-8 text-text-muted">Loading…</p>}
       {error && <p className="mt-8 text-red-500">Failed to load topics.</p>}

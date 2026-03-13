@@ -47,6 +47,7 @@ describe("Compare route", () => {
     await renderCompare();
 
     expect(screen.getByRole("heading", { name: "Compare" })).toBeInTheDocument();
+    expect(screen.getByText(/normalized to 0–1/i)).toBeInTheDocument();
     expect(screen.getByText("Select at least 2 works to compare.")).toBeInTheDocument();
   });
 

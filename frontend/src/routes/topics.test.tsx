@@ -43,6 +43,7 @@ describe("Topics route", () => {
     await renderTopics();
 
     expect(screen.getByRole("heading", { name: "Topics" })).toBeInTheDocument();
+    expect(screen.getByText(/characteristic keywords.*TF-IDF/i)).toBeInTheDocument();
     expect(screen.getByText("Test Title")).toBeInTheDocument();
     expect(screen.getByText("love")).toBeInTheDocument();
     expect(screen.getByText("heart")).toBeInTheDocument();

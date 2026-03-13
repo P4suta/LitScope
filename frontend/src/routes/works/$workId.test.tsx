@@ -150,7 +150,7 @@ describe("WorkDetail route", () => {
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(3);
   });
 
-  it("renders vocabulary section with charts when data is available", async () => {
+  it("renders vocabulary section with charts and descriptions when data is available", async () => {
     const useWork = await getUseWork();
     const mocks = await getAnalysisMocks();
     useWork.mockReturnValue(noData);
@@ -172,13 +172,17 @@ describe("WorkDetail route", () => {
     await renderWorkDetail();
 
     expect(screen.getByText("Vocabulary")).toBeInTheDocument();
+    expect(screen.getByText(/vocabulary richness and diversity/i)).toBeInTheDocument();
     expect(screen.getByText("5,000")).toBeInTheDocument();
     expect(screen.getByText("0.1234")).toBeInTheDocument();
     expect(screen.getByTestId("word-freq-chart")).toBeInTheDocument();
     expect(screen.getByTestId("zipf-plot")).toBeInTheDocument();
+    // Metric tooltips are present
+    expect(screen.getByLabelText(/Info:.*Type-Token Ratio/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Info:.*Textual Lexical Diversity/)).toBeInTheDocument();
   });
 
-  it("renders readability section when data is available", async () => {
+  it("renders readability section with description when data is available", async () => {
     const useWork = await getUseWork();
     const mocks = await getAnalysisMocks();
     useWork.mockReturnValue(noData);
@@ -198,6 +202,7 @@ describe("WorkDetail route", () => {
     await renderWorkDetail();
 
     expect(screen.getByText("Readability")).toBeInTheDocument();
+    expect(screen.getByText(/readability scores/i)).toBeInTheDocument();
     expect(screen.getByText("8.5")).toBeInTheDocument();
     expect(screen.getByText("15.3")).toBeInTheDocument();
   });
@@ -226,7 +231,7 @@ describe("WorkDetail route", () => {
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders syntax section with POS chart when data is available", async () => {
+  it("renders syntax section with POS chart and description when data is available", async () => {
     const useWork = await getUseWork();
     const mocks = await getAnalysisMocks();
     useWork.mockReturnValue(noData);
@@ -244,6 +249,7 @@ describe("WorkDetail route", () => {
     await renderWorkDetail();
 
     expect(screen.getByText("Part-of-Speech Distribution")).toBeInTheDocument();
+    expect(screen.getByText(/part-of-speech distribution reveals/i)).toBeInTheDocument();
     expect(screen.getByTestId("pos-chart")).toBeInTheDocument();
   });
 });

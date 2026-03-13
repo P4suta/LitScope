@@ -28,7 +28,7 @@ async function renderTimeline() {
 }
 
 describe("Timeline route", () => {
-  it("renders heading and timeline chart when data is available", async () => {
+  it("renders heading, section description, and timeline chart when data is available", async () => {
     const useTimeline = await getUseTimeline();
     useTimeline.mockReturnValue({
       data: {
@@ -51,6 +51,7 @@ describe("Timeline route", () => {
     await renderTimeline();
 
     expect(screen.getByRole("heading", { name: "Timeline" })).toBeInTheDocument();
+    expect(screen.getByText(/vocabulary diversity over publication years/i)).toBeInTheDocument();
     expect(screen.getByTestId("timeline-chart")).toBeInTheDocument();
   });
 
