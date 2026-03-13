@@ -58,7 +58,7 @@ jobs:
         run: bun run check
 
       - name: Generate route tree
-        run: bun run generate:routes
+        run: bunx tsr generate
 
       - name: Type check
         run: bunx tsc --noEmit
