@@ -214,8 +214,8 @@ All settings use environment variables with `LITSCOPE_` prefix. Defaults are pro
 | Layer | Technology |
 |---|---|
 | Backend | Python 3.12+, FastAPI, DuckDB, spaCy, BERTopic |
-| Frontend | React 19, TypeScript 5+, D3.js, Tailwind CSS, Vite |
-| Package Management | uv (Python), npm (Frontend) |
+| Frontend | React 19, TypeScript 5+, D3.js, Tailwind CSS v4, Vite 6, TanStack Router, Biome |
+| Package Management | uv (Python), Bun (Frontend) |
 | CI | GitHub Actions |
 | Deployment | Docker Compose |
 

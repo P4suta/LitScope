@@ -13,5 +13,12 @@ services:
       LITSCOPE_API_PORT: "8000"
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
 volumes:
   litscope-data:
