@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GenreDistributionChart } from "@/components/charts/genre-distribution-chart";
+import { Section } from "@/components/ui/section";
+import { StatCard } from "@/components/ui/stat";
 import { useStatus } from "@/hooks/use-status";
 import { useWorks } from "@/hooks/use-works";
 
@@ -31,19 +33,11 @@ function Dashboard() {
       </div>
       {items && items.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-4 text-xl font-semibold">Genre Distribution</h2>
-          <GenreDistributionChart works={items} />
+          <Section title="Genre Distribution" sectionKey="genre_distribution">
+            <GenreDistributionChart works={items} />
+          </Section>
         </div>
       )}
-    </div>
-  );
-}
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
-      <p className="text-sm text-text-muted">{label}</p>
-      <p className="mt-1 text-3xl font-semibold">{value}</p>
     </div>
   );
 }
