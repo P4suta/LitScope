@@ -3,6 +3,9 @@
 import hashlib
 from pathlib import Path
 
+import pytest
+
+from litscope.exceptions import EpubParseError
 from litscope.ingestion.epub_parser import EpubParser, ParsedChapter, ParsedEpub
 
 
@@ -50,3 +53,9 @@ class TestEpubParser:
     def test_date_metadata(self, sample_epub_path: Path) -> None:
         result = EpubParser().parse(sample_epub_path)
         assert "date" in result.raw_metadata
+
+    def test_invalid_epub_raises_parse_error(self, tmp_path: Path) -> None:
+        bad = tmp_path / "bad.epub"
+        bad.write_bytes(b"not an epub")
+        with pytest.raises(EpubParseError, match="Failed to parse"):
+            EpubParser().parse(bad)

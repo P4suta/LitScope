@@ -5,6 +5,11 @@ from types import TracebackType
 from typing import Self
 
 import duckdb
+import structlog
+
+from litscope.exceptions import DatabaseError
+
+logger = structlog.get_logger()
 
 
 class Database:
@@ -24,7 +29,10 @@ class Database:
 
     def connect(self) -> None:
         """Open a connection to the database."""
-        self._conn = duckdb.connect(self._db_path)
+        try:
+            self._conn = duckdb.connect(self._db_path)
+        except Exception as e:
+            raise DatabaseError(f"Failed to connect to {self._db_path}: {e}") from e
 
     def close(self) -> None:
         """Close the database connection."""

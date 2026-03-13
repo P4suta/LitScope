@@ -5,7 +5,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import ebooklib
+import structlog
 from ebooklib import epub
+
+from litscope.exceptions import EpubParseError
+
+logger = structlog.get_logger()
 
 
 _EXCLUDED_EPUB_TYPES = frozenset(
@@ -46,16 +51,22 @@ class EpubParser:
 
     def parse(self, epub_path: Path) -> ParsedEpub:
         """Parse an EPUB file and return structured content."""
-        file_hash = self._compute_hash(epub_path)
-        book = epub.read_epub(str(epub_path), options={"ignore_ncx": True})
-        raw_metadata = self._extract_raw_metadata(book)
-        chapters = self._extract_chapters(book)
-        return ParsedEpub(
-            file_path=str(epub_path),
-            file_hash=file_hash,
-            raw_metadata=raw_metadata,
-            chapters=chapters,
-        )
+        try:
+            file_hash = self._compute_hash(epub_path)
+            book = epub.read_epub(str(epub_path), options={"ignore_ncx": True})
+            raw_metadata = self._extract_raw_metadata(book)
+            chapters = self._extract_chapters(book)
+            logger.info("epub_parsed", path=str(epub_path), chapters=len(chapters))
+            return ParsedEpub(
+                file_path=str(epub_path),
+                file_hash=file_hash,
+                raw_metadata=raw_metadata,
+                chapters=chapters,
+            )
+        except EpubParseError:
+            raise
+        except Exception as e:
+            raise EpubParseError(f"Failed to parse {epub_path}: {e}") from e
 
     @staticmethod
     def _compute_hash(path: Path) -> str:
