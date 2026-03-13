@@ -27,9 +27,11 @@ class TestVocabularyFrequencyAnalyzer:
         analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
         result = analyzer.analyze(work_data, AnalysisContext())
         freqs = result.data["frequencies"]
-        # "cat" appears 2 times, total non-PUNCT tokens = 17, stop words excluded
+        # "cat" appears 2 times (non-stopword), total non-PUNCT tokens = 17
         assert freqs["cat"]["count"] == 2
         assert freqs["cat"]["tf"] == pytest.approx(2 / 17)
+        # stopwords excluded from frequencies
+        assert "the" not in freqs
 
     def test_ranking(self, seeded_db: Database, work_data: WorkData) -> None:
         analyzer = VocabularyFrequencyAnalyzer(seeded_db, LitScopeSettings())
@@ -73,7 +75,6 @@ class TestVocabularyFrequencyAnalyzer:
             "ORDER BY count DESC",
             ["test-work"],
         ).fetchall()
-        # 10 unique non-stop lemmas
         assert len(rows) == 10
         assert rows[0][0] == "cat"
         assert rows[0][1] == 2
